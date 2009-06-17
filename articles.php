@@ -6,7 +6,7 @@
  *
  * Плагин обеспечивает возможность публикации на сайте статей
  *
- * @version 2.11
+ * @version 2.12
  *
  * @copyright   2005-2007, ProCreat Systems, http://procreat.ru/
  * @copyright   2007-2009, Eresus Group, http://eresus.ru/
@@ -90,7 +90,7 @@ class TArticles extends TListContentPlugin {
 	 * Версия плагина
 	 * @var string
 	 */
-	var $version = '2.11';
+	var $version = '2.12a';
 
 	/**
 	 * Описание плагина
