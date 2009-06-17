@@ -293,16 +293,23 @@ class TArticles extends TListContentPlugin {
 		$item['posted'] = gettime();
 		$Eresus->db->insert($this->table['name'], $item);
 		$item['id'] = $Eresus->db->getInsertedID();
-		if (is_uploaded_file($_FILES['image']['tmp_name']))
-		{
+
+		if (is_uploaded_file($_FILES['image']['tmp_name'])) {
+
+			$tmpFile = tempnam($Eresus->fdata, $this->name);
+			upload('image', $tmpFile);
+
 			$item['image'] = $item['id'].'_'.time();
 			$filename = filesRoot.'data/articles/'.$item['image'];
 			useLib('glib');
-			thumbnail($_FILES['image']['tmp_name'], $filename.'.jpg', $this->settings['imageWidth'], $this->settings['imageHeight'], $this->settings['imageColor']);
-			thumbnail($_FILES['image']['tmp_name'], $filename.'-thmb.jpg', $this->settings['THimageWidth'], $this->settings['THimageHeight'], $this->settings['imageColor']);
+			thumbnail($tmpFile, $filename.'.jpg', $this->settings['imageWidth'], $this->settings['imageHeight'], $this->settings['imageColor']);
+			thumbnail($tmpFile, $filename.'-thmb.jpg', $this->settings['THimageWidth'], $this->settings['THimageHeight'], $this->settings['imageColor']);
+			unlink($tmpFile);
+
 			$Eresus->db->updateItem($this->table['name'], $item, '`id` = "'.$item['id'].'"');
 
 		}
+
 		sendNotify(admAdded.': <a href="'.httpRoot.'admin.php?mod=content&section='.$item['section'].'&id='.$item['id'].'">'.$item['caption'].'</a><br />'.$item['text']);
 		goto(arg('submitURL'));
 	}
@@ -321,6 +328,10 @@ class TArticles extends TListContentPlugin {
 		if (empty($item['preview']) || arg('updatePreview')) $item['preview'] = $this->createPreview($item['text']);
 
 		if (is_uploaded_file($_FILES['image']['tmp_name'])) {
+
+			$tmpFile = tempnam($Eresus->fdata, $this->name);
+			upload('image', $tmpFile);
+
 			$filename = filesRoot.'data/articles/'.$image;
 			if (($image != '') && (file_exists($filename.'.jpg')))
 			{
@@ -330,9 +341,9 @@ class TArticles extends TListContentPlugin {
 			$item['image'] = $item['id'].'_'.time();
 			$filename = filesRoot.'data/articles/'.$item['image'];
 			useLib('glib');
-			thumbnail($_FILES['image']['tmp_name'], $filename.'.jpg', $this->settings['imageWidth'], $this->settings['imageHeight'], $this->settings['imageColor']);
-			thumbnail($_FILES['image']['tmp_name'], $filename.'-thmb.jpg', $this->settings['THimageWidth'], $this->settings['THimageHeight'], $this->settings['imageColor']);
-
+			thumbnail($tmpFile, $filename.'.jpg', $this->settings['imageWidth'], $this->settings['imageHeight'], $this->settings['imageColor']);
+			thumbnail($tmpFile, $filename.'-thmb.jpg', $this->settings['THimageWidth'], $this->settings['THimageHeight'], $this->settings['imageColor']);
+			unlink($tmpFile);
 		}
 		$Eresus->db->updateItem($this->table['name'], $item, "`id`='".arg('update', 'int')."'");
 		sendNotify(admUpdated.': <a href="'.$page->url().'">'.$item['caption'].'</a><br />'.$item['text']);
