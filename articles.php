@@ -287,10 +287,18 @@ class TArticles extends TListContentPlugin {
 	{
 		global $Eresus, $page;
 
-		$item = getArgs($Eresus->db->fields($this->table['name']));
+		$item = array();
+		$item['section'] = arg('section', 'int');
 		$item['active'] = true;
-		if (empty($item['preview'])) $item['preview'] = $this->createPreview($item['text']);
+		// FIXME Не задаётся position. Наверно надо учесть режим сортировки
 		$item['posted'] = gettime();
+		$item['block'] = arg('block', 'int');
+		$item['caption'] = arg('caption', 'dbsafe');
+		$item['text'] = arg('text', 'dbsafe');
+		$item['preview'] = arg('preview', 'dbsafe');
+		if (empty($item['preview'])) $item['preview'] = $this->createPreview($item['text']);
+		$item['image'] = '';
+
 		$Eresus->db->insert($this->table['name'], $item);
 		$item['id'] = $Eresus->db->getInsertedID();
 
@@ -324,7 +332,16 @@ class TArticles extends TListContentPlugin {
 
 		$item = $Eresus->db->selectItem($this->table['name'], "`id`='".arg('update', 'int')."'");
 		$image = $item['image'];
-		$item = GetArgs($item, array('active', 'block'));
+		$item = array();
+		$item['section'] = arg('section', 'int');
+		if ( ! is_null(arg('section')) )
+			$item['active'] = arg('active', 'int');
+		// FIXME Не задаётся position. Наверно надо учесть режим сортировки
+		$item['posted'] = arg('posted', 'dbsafe');
+		$item['block'] = arg('block', 'int');
+		$item['caption'] = arg('caption', 'dbsafe');
+		$item['text'] = arg('text', 'dbsafe');
+		$item['preview'] = arg('preview', 'dbsafe');
 		if (empty($item['preview']) || arg('updatePreview')) $item['preview'] = $this->createPreview($item['text']);
 
 		if (is_uploaded_file($_FILES['image']['tmp_name'])) {
