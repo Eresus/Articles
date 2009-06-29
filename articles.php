@@ -6,7 +6,7 @@
  *
  * Плагин обеспечивает возможность публикации на сайте статей
  *
- * @version 2.12.$LastChangedRevision$
+ * @version 2.12
  *
  * @copyright   2005-2007, ProCreat Systems, http://procreat.ru/
  * @copyright   2007-2009, Eresus Group, http://eresus.ru/
@@ -32,6 +32,8 @@
  *
  * @package Plugins
  * @subpackage Articles
+ *
+ * $Id$
  */
 
 /**
