@@ -6,13 +6,14 @@
  *
  * Плагин обеспечивает возможность публикации на сайте статей
  *
- * @version 2.12
+ * @version 2.13
  *
- * @copyright   2005-2007, ProCreat Systems, http://procreat.ru/
- * @copyright   2007-2009, Eresus Group, http://eresus.ru/
- * @license     http://www.gnu.org/licenses/gpl.txt  GPL License 3
- * @author      Mikhail Krasilnikov <mk@procreat.ru>
- * @author      БерсЪ <bersz@procreat.ru>
+ * @copyright 2005, ProCreat Systems, http://procreat.ru/
+ * @copyright 2007, Eresus Group, http://eresus.ru/
+ * @copyright 2010, ООО "Два слона", http://dvaslona.ru/
+ * @license http://www.gnu.org/licenses/gpl.txt  GPL License 3
+ * @author Mikhail Krasilnikov <mk@procreat.ru>
+ * @author БерсЪ <bersz@procreat.ru>
  *
  * Данная программа является свободным программным обеспечением. Вы
  * вправе распространять ее и/или модифицировать в соответствии с
@@ -30,8 +31,7 @@
  * GNU с этой программой. Если Вы ее не получили, смотрите документ на
  * <http://www.gnu.org/licenses/>
  *
- * @package Plugins
- * @subpackage Articles
+ * @package Articles
  *
  * $Id$
  */
@@ -68,7 +68,8 @@ define('_ARTICLES_TMPL_BLOCK', '<img src="'.httpRoot.'core/img/info.gif" width="
  * @package Plugins
  * @subpackage Articles
  */
-class TArticles extends TListContentPlugin {
+class TArticles extends TListContentPlugin
+{
 
 	/**
 	 * Имя плагина
@@ -92,7 +93,7 @@ class TArticles extends TListContentPlugin {
 	 * Версия плагина
 	 * @var string
 	 */
-	var $version = '2.12a';
+	var $version = '2.13a';
 
 	/**
 	 * Описание плагина
