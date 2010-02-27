@@ -93,7 +93,7 @@ class TArticles extends TListContentPlugin
 	 * Версия плагина
 	 * @var string
 	 */
-	var $version = '2.13a';
+	var $version = '2.13b';
 
 	/**
 	 * Описание плагина
