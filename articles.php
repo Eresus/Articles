@@ -396,12 +396,11 @@ class TArticles extends TListContentPlugin
 	/**
 	 * Замена макросов в строке
 	 *
-	 * @param string $template    Исходная строка
-	 * @param array  $item        Массив замен
-	 * @param string $dateFormat  Формат времени
-	 * @return string
+	 * @param string $template  Шаблон
+	 * @param array  $item      Массив замен
+	 * @return string  HTML
 	 */
-	function replaceMacros($template, $item, $dateFormat)
+	function replaceMacros($template, $item)
 	{
 		global $Eresus, $page;
 
@@ -439,7 +438,7 @@ class TArticles extends TListContentPlugin
 				strip_tags(htmlspecialchars(StripSlashes($item['caption']))),
 				StripSlashes($item['preview']),
 				StripSlashes($item['text']),
-				FormatDate($item['posted'], $dateFormat),
+				$item['posted'],
 				$page->clientURL($item['section']).$item['id'].'/',
 				$image,
 				$thumbnail,
@@ -447,7 +446,6 @@ class TArticles extends TListContentPlugin
 				$height,
 				$THwidth,
 				$THheight,
-
 			),
 			$template
 		);
@@ -604,8 +602,12 @@ class TArticles extends TListContentPlugin
 
 		$result = '';
 		$items = $Eresus->db->select($this->table['name'], "`active`='1'".($this->settings['blockMode']==_ARTICLES_BLOCK_MANUAL?" AND `block`='1'":''), $this->table['sortMode'], $this->table['sortDesc'], '', $this->settings['blockCount']);
-		if (count($items)) foreach($items as $item)
-			$result .= $this->replaceMacros($this->settings['tmplBlockItem'], $item, $this->settings['dateFormatPreview']);
+		if (count($items))
+			foreach($items as $item)
+			{
+				$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatPreview']);
+				$result .= $this->replaceMacros($this->settings['tmplBlockItem'], $item);
+			}
 		return $result;
 	}
 	//-----------------------------------------------------------------------------
@@ -618,7 +620,8 @@ class TArticles extends TListContentPlugin
 	 */
 	function clientRenderListItem($item)
 	{
-		$result = $this->replaceMacros($this->settings['tmplListItem'], $item, $this->settings['dateFormatPreview']);
+		$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatPreview']);
+		$result = $this->replaceMacros($this->settings['tmplListItem'], $item);
 		return $result;
 	}
 	//-----------------------------------------------------------------------------
@@ -633,11 +636,15 @@ class TArticles extends TListContentPlugin
 		global $Eresus, $page;
 
 		$item = $Eresus->db->selectItem($this->table['name'], "(`id`='".$page->topic."')AND(`active`='1')");
-		if (is_null($item)) {
+		if (is_null($item))
+		{
 			$item = $page->httpError(404);
 			$result = $item['content'];
-		} else {
-			$result = $this->replaceMacros($this->settings['tmplItem'], $item, $this->settings['dateFormatFullText']);
+		}
+			else
+		{
+			$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatFullText']);
+			$result = $this->replaceMacros($this->settings['tmplItem'], $item);
 		}
 		$page->section[] = $item['caption'];
 		$item['access'] = $page->access;
