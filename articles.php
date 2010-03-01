@@ -1,12 +1,12 @@
 <?php
 /**
- * Articles
+ * Статьи
  *
  * Eresus 2
  *
- * Плагин обеспечивает возможность публикации на сайте статей
+ * Публикация статей
  *
- * @version 2.13
+ * @version 2.13a
  *
  * @copyright 2005, ProCreat Systems, http://procreat.ru/
  * @copyright 2007, Eresus Group, http://eresus.ru/
@@ -592,6 +592,34 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
+	 * Формирование контента
+	 *
+	 * @return string
+	 */
+	function clientRenderContent()
+	{
+		global $Eresus, $page;
+
+		if ($page->topic) {
+			$acceptUrl = $Eresus->request['path'] .
+				($page->subpage !== 0 ? 'p' . $page->subpage . '/' : '') .
+				($page->topic !== false ? $page->topic . '/' : '');
+			if ($acceptUrl != $Eresus->request['url']) {
+				$page->httpError(404);
+			}
+		} else {
+			$acceptUrl = $Eresus->request['path'] .
+				($page->subpage !== 0 ? 'p' . $page->subpage . '/' : '');
+			if ($acceptUrl != $Eresus->request['url']) {
+				$page->httpError(404);
+			}
+		}
+
+		return parent::clientRenderContent();
+	}
+	//-----------------------------------------------------------------------------
+
+	/**
 	 * Отрисовка блока статей
 	 *
 	 * @return string
@@ -634,6 +662,10 @@ class TArticles extends TListContentPlugin
 	function clientRenderItem()
 	{
 		global $Eresus, $page;
+
+		if ($page->topic != (string)((int)($page->topic))) {
+			$page->httpError(404);
+		}
 
 		$item = $Eresus->db->selectItem($this->table['name'], "(`id`='".$page->topic."')AND(`active`='1')");
 		if (is_null($item))
