@@ -6,7 +6,7 @@
  *
  * Публикация статей
  *
- * @version 2.13a
+ * @version 2.13
  *
  * @copyright 2005, ProCreat Systems, http://procreat.ru/
  * @copyright 2007, Eresus Group, http://eresus.ru/
