@@ -212,11 +212,11 @@ class TArticles extends TListContentPlugin
 	 *
 	 * Производит регистрацию обработчиков событий
 	 */
-	function TArticles()
+	public function __construct()
 	{
 		global $Eresus;
 
-		parent::TListContentPlugin();
+		parent::__construct();
 
 		if ($this->settings['blockMode'])
 			$Eresus->plugins->events['clientOnPageRender'][] = $this->name;
