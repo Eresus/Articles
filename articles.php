@@ -78,6 +78,12 @@ class TArticles extends TListContentPlugin
 	var $name = 'articles';
 
 	/**
+	 * Требуемая версия ядра
+	 * @var string
+	 */
+	public $kernel = '2.12b';
+
+	/**
 	 * Тип плагина
 	 * @var string
 	 */
@@ -322,7 +328,7 @@ class TArticles extends TListContentPlugin
 		}
 
 		sendNotify(admAdded.': <a href="'.httpRoot.'admin.php?mod=content&section='.$item['section'].'&id='.$item['id'].'">'.$item['caption'].'</a><br />'.$item['text']);
-		goto(arg('submitURL'));
+		HTTP::redirect(arg('submitURL'));
 	}
 	//-----------------------------------------------------------------------------
 
@@ -368,7 +374,7 @@ class TArticles extends TListContentPlugin
 		$Eresus->db->updateItem($this->table['name'], $item, "`id`='".arg('update', 'int')."'");
 		sendNotify(admUpdated.': <a href="'.$page->url().'">'.$item['caption'].'</a><br />'.$item['text']);
 
-		goto(arg('submitURL'));
+		HTTP::redirect(arg('submitURL'));
 	}
 	//-----------------------------------------------------------------------------
 
@@ -502,7 +508,7 @@ class TArticles extends TListContentPlugin
 			$filename = dataFiles.$this->name.'/'.$item['image'];
 			if (is_file($filename.'.jpg')) unlink($filename.'.jpg');
 			if (is_file($filename.'-thmb.jpg')) unlink($filename.'-thmb.jpg');
-			goto($page->url());
+			HTTP::redirect($page->url());
 		}
 
 		$form = array(
