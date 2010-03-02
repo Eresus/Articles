@@ -113,6 +113,11 @@ class TArticles extends TListContentPlugin
 	 */
 	var $settings = array(
 		'itemsPerPage' => 10,
+		'tmplList' => '
+			<h1>$(title)</h1>
+			$(content)
+			$(items)
+		',
 		'tmplListItem' => '
 			<div class="ArticlesListItem">
 				<h3>$(caption)</h3>
@@ -170,7 +175,9 @@ class TArticles extends TListContentPlugin
 		'tabs' => array(
 			'width'=>'180px',
 			'items'=>array(
-			 array('caption'=>'Добавить статью', 'name'=>'action', 'value'=>'create')
+				'create' => array('caption'=>'Добавить статью', 'name'=>'action', 'value'=>'create'),
+				'list' => array('caption' => 'Список статей'),
+				'text' => array('caption' => 'Текст на странице', 'name'=>'action', 'value'=>'text'),
 			),
 		),
 		'sql' => "(
@@ -400,6 +407,22 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
+	 * Изменение текста на странице
+	 */
+	function text()
+	{
+		global $Eresus, $page;
+
+		$item = $Eresus->db->selectItem('pages', '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
+		$item['content'] = $Eresus->db->escape($Eresus->request['arg']['content']);
+		$item = array('id' => $item['id'], 'content' => $item['content']);
+		$Eresus->db->updateItem('pages', $item, '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
+
+		goto($page->url(array('action' => 'text')));
+	}
+	//-----------------------------------------------------------------------------
+
+	/**
 	 * Замена макросов в строке
 	 *
 	 * @param string $template  Шаблон
@@ -458,6 +481,30 @@ class TArticles extends TListContentPlugin
 		return $result;
 	}
 	//-----------------------------------------------------------------------------
+
+	/**
+	 * Определяет отображаемый раздел АИ
+	 *
+	 * @return string|null
+	 */
+	function adminRenderContent()
+	{
+		global $Eresus, $page;
+
+		if (!is_null(arg('action')) && arg('action') == 'textupdate' && method_exists($this, 'text')) {
+			// редактировать текст на странице
+			$result = $this->text();
+		} else if (!is_null(arg('action')) && arg('action') == 'text' && method_exists($this, 'adminRenderText')) {
+			// диалог редактирования текста на странице
+			$result = $this->adminRenderText();
+		} else {
+			$result = parent::adminRenderContent();
+		}
+
+		return $result;
+	}
+	//-----------------------------------------------------------------------------
+
 
 	/**
 	 * Диалог добавления статьи
@@ -538,6 +585,32 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
+	 * Диалог редактирования текста на странице
+	 *
+	 * @return string
+	 */
+	function adminRenderText()
+	{
+		global $Eresus, $page;
+
+		$item = $Eresus->db->selectItem('pages', '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
+		$form = array(
+			'name' => 'contentEditor',
+			'caption' => 'Текст на странице',
+			'width' => '95%',
+			'fields' => array(
+				array('type' => 'hidden', 'name' => 'action', 'value' => 'textupdate'),
+				array('type' => 'html', 'name' => 'content', 'height' => '400px', 'value' => $item['content']),
+			),
+			'buttons'=> array('ok', 'reset'),
+		);
+
+		$result = $page->renderForm($form);
+		return $page->renderTabs($this->table['tabs']) . $result;
+	}
+	//-----------------------------------------------------------------------------
+
+	/**
 	 * Диалог настроек
 	 * @return string
 	 */
@@ -551,11 +624,20 @@ class TArticles extends TListContentPlugin
 			'width' => '500px',
 			'fields' => array (
 				array('type'=>'hidden','name'=>'update', 'value'=>$this->name),
+				array('type'=>'text','value'=>'Для вставки блока статей используйте макрос <b>$(ArticlesBlock)</b><br />'),
+				array('type'=>'header','value'=>'Параметры полнотекстового просмотра'),
 				array('type'=>'memo','name'=>'tmplItem','label'=>'Шаблон полнотекстового просмотра','height'=>'5'),
 				array('type'=>'edit','name'=>'dateFormatFullText','label'=>'Формат даты', 'width'=>'100px'),
 				array('type'=>'header', 'value' => 'Параметры списка'),
 				array('type'=>'edit','name'=>'itemsPerPage','label'=>'Статей на страницу','width'=>'50px', 'maxlength'=>'2'),
-				array('type'=>'memo','name'=>'tmplListItem','label'=>'Шаблон элемента','height'=>'5'),
+				array('type'=>'memo','name'=>'tmplList','label'=>'Шаблон списка','height'=>'3'),
+				array('type'=>'text','value'=>'
+					Макросы:<br />
+					<strong>$(title)</strong> - заголовок страницы,<br />
+					<strong>$(content)</strong> - контент страницы,<br />
+					<strong>$(items)</strong> - список статей
+				'),
+				array('type'=>'memo','name'=>'tmplListItem','label'=>'Шаблон элемента списка','height'=>'5'),
 				array('type'=>'edit','name'=>'dateFormatPreview','label'=>'Формат даты', 'width'=>'100px'),
 				array('type'=>'select','name'=>'listSortMode','label'=>'Сортировка', 'values' => array('posted', 'position'), 'items' => array('По дате добавления', 'Ручная')),
 				array('type'=>'checkbox','name'=>'listSortDesc','label'=>'В обратном порядке'),
@@ -574,7 +656,7 @@ class TArticles extends TListContentPlugin
 				array('type'=>'edit','name'=>'imageColor','label'=>'Цвета фона', 'width'=>'100px', 'comment' => '#RRGGBB'),
 				array('type'=>'divider'),
 				array('type'=>'text', 'value'=>
-					"Для создания шаблонов можно использовать макросы:<br />\n".
+					"Для создания шаблонов полнотекстового просмотра, элемента списка и элемента блока можно использовать макросы:<br />\n".
 					"<b>$(caption)</b> - заголовок<br />\n".
 					"<b>$(preview)</b> - краткий текст<br />\n".
 					"<b>$(text)</b> - полный текст<br />\n".
@@ -585,9 +667,7 @@ class TArticles extends TListContentPlugin
 					"<b>$(imageWidth)</b> - ширина картинки<br />\n".
 					"<b>$(imageHeight)</b> - высота картинки<br />\n".
 					"<b>$(thumbnailWidth)</b> - ширина миниатюры<br />\n".
-					"<b>$(thumbnailHeight)</b> - высота миниатюры<br />\n".
-
-					"Для вставки блока статей используйте макрос <b>$(ArticlesBlock)</b><br />\n"
+					"<b>$(thumbnailHeight)</b> - высота миниатюры<br />\n"
 			 ),
 		),
 			'buttons' => array('ok', 'apply', 'cancel'),
@@ -642,6 +722,29 @@ class TArticles extends TListContentPlugin
 				$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatPreview']);
 				$result .= $this->replaceMacros($this->settings['tmplBlockItem'], $item);
 			}
+		return $result;
+	}
+	//-----------------------------------------------------------------------------
+
+	/**
+	 * Отрисовка списка статей
+	 *
+	 * @param array $options  Свойства списка статей
+	 *              $options['pages'] bool Отображать переключатель страниц
+	 *              $options['oldordering'] bool Сортировать элементы
+	 * @return string
+	 */
+	function clientRenderList($options = null)
+	{
+		global $Eresus, $page;
+
+		$item = array(
+			'items' => parent::clientRenderList($options),
+			'title' => $page->title,
+			'content' => $page->content,
+		);
+		$result = parent::replaceMacros($this->settings['tmplList'], $item);
+
 		return $result;
 	}
 	//-----------------------------------------------------------------------------
