@@ -418,7 +418,7 @@ class TArticles extends TListContentPlugin
 		$item = array('id' => $item['id'], 'content' => $item['content']);
 		$Eresus->db->updateItem('pages', $item, '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
 
-		goto($page->url(array('action' => 'text')));
+		HTTP::redirect($page->url(array('action' => 'text')));
 	}
 	//-----------------------------------------------------------------------------
 
