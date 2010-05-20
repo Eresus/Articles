@@ -99,7 +99,7 @@ class TArticles extends TListContentPlugin
 	 * Версия плагина
 	 * @var string
 	 */
-	var $version = '2.13a';
+	var $version = '2.13';
 
 	/**
 	 * Описание плагина
@@ -419,7 +419,7 @@ class TArticles extends TListContentPlugin
 		$item = array('id' => $item['id'], 'content' => $item['content']);
 		$Eresus->db->updateItem('pages', $item, '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
 
-		HTTP::redirect($page->url(array('action' => 'text')));
+		HTTP::redirect(str_replace('&amp;', '&', $page->url(array('action' => 'text'))));
 	}
 	//-----------------------------------------------------------------------------
 
