@@ -2,11 +2,9 @@
 /**
  * Статьи
  *
- * Eresus 2
- *
  * Публикация статей
  *
- * @version 2.14
+ * @version 2.15
  *
  * @copyright 2005, ProCreat Systems, http://procreat.ru/
  * @copyright 2007, Eresus Group, http://eresus.ru/
@@ -81,7 +79,7 @@ class TArticles extends TListContentPlugin
 	 * Требуемая версия ядра
 	 * @var string
 	 */
-	public $kernel = '2.12b';
+	public $kernel = '2.14b';
 
 	/**
 	 * Тип плагина
@@ -99,7 +97,7 @@ class TArticles extends TListContentPlugin
 	 * Версия плагина
 	 * @var string
 	 */
-	var $version = '2.14a';
+	var $version = '2.15a';
 
 	/**
 	 * Описание плагина
@@ -334,7 +332,6 @@ class TArticles extends TListContentPlugin
 
 		}
 
-		sendNotify(admAdded.': <a href="'.httpRoot.'admin.php?mod=content&section='.$item['section'].'&id='.$item['id'].'">'.$item['caption'].'</a><br />'.$item['text']);
 		HTTP::redirect(arg('submitURL'));
 	}
 	//-----------------------------------------------------------------------------
@@ -380,7 +377,6 @@ class TArticles extends TListContentPlugin
 			unlink($tmpFile);
 		}
 		$Eresus->db->updateItem($this->table['name'], $item, "`id`='".arg('update', 'int')."'");
-		sendNotify(admUpdated.': <a href="'.$page->url().'">'.$item['caption'].'</a><br />'.$item['text']);
 
 		HTTP::redirect(arg('submitURL'));
 	}
@@ -647,7 +643,7 @@ class TArticles extends TListContentPlugin
 				array('type'=>'memo','name'=>'tmplBlockItem','label'=>'Шаблон элемента блока','height'=>'3'),
 				array('type'=>'edit','name'=>'blockCount','label'=>'Количество', 'width'=>'50px'),
 				array('type'=>'header', 'value' => 'Краткое описание'),
-				array('type'=>'edit','name'=>'previewMaxSize','label'=>'Макс. размер описания','width'=>'50px', 'maxlength'=>'4', 'comment'=>'симовлов'),
+				array('type'=>'edit','name'=>'previewMaxSize','label'=>'Макс. размер описания','width'=>'50px', 'maxlength'=>'4', 'comment'=>'символов'),
 				array('type'=>'checkbox','name'=>'previewSmartSplit','label'=>'"Умное" создание описания'),
 				array('type'=>'header', 'value' => 'Картинка'),
 				array('type'=>'edit','name'=>'imageWidth','label'=>'Ширина', 'width'=>'100px'),
