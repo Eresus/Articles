@@ -316,9 +316,9 @@ class TArticles extends TListContentPlugin
 		$Eresus->db->insert($this->table['name'], $item);
 		$item['id'] = $Eresus->db->getInsertedID();
 
-		if (is_uploaded_file($_FILES['image']['tmp_name'])) {
-
-			$tmpFile = tempnam($Eresus->fdata, $this->name);
+		if (is_uploaded_file($_FILES['image']['tmp_name']))
+		{
+			$tmpFile = $Eresus->fdata . '/' . $this->name . '/uploaded.bin';
 			upload('image', $tmpFile);
 
 			$item['image'] = $item['id'].'_'.time();
@@ -329,7 +329,6 @@ class TArticles extends TListContentPlugin
 			unlink($tmpFile);
 
 			$Eresus->db->updateItem($this->table['name'], $item, '`id` = "'.$item['id'].'"');
-
 		}
 
 		HTTP::redirect(arg('submitURL'));
@@ -359,8 +358,7 @@ class TArticles extends TListContentPlugin
 
 		if (is_uploaded_file($_FILES['image']['tmp_name']))
 		{
-
-			$tmpFile = tempnam($Eresus->fdata, $this->name);
+			$tmpFile = $Eresus->fdata . '/' . $this->name . '/uploaded.bin';
 			upload('image', $tmpFile);
 
 			$filename = filesRoot.'data/articles/'.$image;
