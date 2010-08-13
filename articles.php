@@ -807,4 +807,30 @@ class TArticles extends TListContentPlugin
 		return $text;
 	}
 	//-----------------------------------------------------------------------------
+
+	/**
+	 * Îáğàáàòûâàåò çàïğîñ íà ïåğåêëş÷åíèå àêòèâíîñòè ñòàòüè
+	 *
+	 * @param int $id  ID ñòàòüè
+	 *
+	 * @return void
+	 *
+	 * @uses DB::getHandler
+	 * @uses DB::execute
+	 * @uses HTTP::redirect
+	 */
+	public function toggle($id)
+	{
+		global $page;
+
+		$q = DB::getHandler()->createUpdateQuery();
+		$e = $q->expr;
+		$q->update($this->table['name'])
+			->set('active', $e->not('active'))
+			->where($e->eq('id', $q->bindValue($id, null, PDO::PARAM_INT)));
+		DB::execute($q);
+
+		HTTP::redirect(str_replace('&amp;', '&', $page->url()));
+	}
+	//-----------------------------------------------------------------------------
 }
