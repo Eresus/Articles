@@ -705,18 +705,26 @@ class TArticles extends TListContentPlugin
 	 *
 	 * @return string
 	 */
-	function renderArticlesBlock()
+	private function renderArticlesBlock()
 	{
 		global $Eresus;
 
 		$result = '';
-		$items = $Eresus->db->select($this->table['name'], "`active`='1'".($this->settings['blockMode']==_ARTICLES_BLOCK_MANUAL?" AND `block`='1'":''), $this->table['sortMode'], $this->table['sortDesc'], '', $this->settings['blockCount']);
+		$items = $Eresus->db->select($this->table['name'],
+			"`active`='1'" . (
+				$this->settings['blockMode'] == _ARTICLES_BLOCK_MANUAL ? " AND `block`='1'" : ''
+			),
+			($this->table['sortDesc'] ? '-' : '') . $this->table['sortMode'], '',
+			$this->settings['blockCount']);
+
 		if (count($items))
-			foreach($items as $item)
+		{
+			foreach ($items as $item)
 			{
 				$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatPreview']);
 				$result .= $this->replaceMacros($this->settings['tmplBlockItem'], $item);
 			}
+		}
 		return $result;
 	}
 	//-----------------------------------------------------------------------------
