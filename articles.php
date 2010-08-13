@@ -52,11 +52,6 @@ define('_ARTICLES_BLOCK_LAST', 1);
  */
 define('_ARTICLES_BLOCK_MANUAL', 2);
 
-/**
- *
- * @var string
- */
-define('_ARTICLES_TMPL_BLOCK', '<img src="'.httpRoot.'core/img/info.gif" width="16" height="16" alt="" title="Показывать в блоке">');
 
 
 
@@ -235,7 +230,12 @@ class TArticles extends TListContentPlugin
 		if ($this->settings['blockMode'] == _ARTICLES_BLOCK_MANUAL) {
 
 			$temp = array_shift($this->table['columns']);
-			array_unshift($this->table['columns'], array('name' => 'block', 'align'=>'center', 'replace'=>array(0 => '', 1 => _ARTICLES_TMPL_BLOCK)), $temp);
+			array_unshift($this->table['columns'], array('name' => 'block', 'align'=>'center',
+				'replace' => array(
+					0 => '',
+					1 => '<span title="Показыватется в блоке статей">*</span>'
+				)
+			), $temp);
 
 		}
 
