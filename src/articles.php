@@ -454,13 +454,16 @@ class TArticles extends TListContentPlugin
 	{
 		global $Eresus, $page;
 
-		if (!is_null(arg('action')) && arg('action') == 'textupdate' && method_exists($this, 'text')) {
-			// редактировать текст на странице
+		if (!is_null(arg('action')) && arg('action') == 'textupdate')
+		{
 			$result = $this->text();
-		} else if (!is_null(arg('action')) && arg('action') == 'text' && method_exists($this, 'adminRenderText')) {
-			// диалог редактирования текста на странице
+		}
+		elseif (!is_null(arg('action')) && arg('action') == 'text')
+		{
 			$result = $this->adminRenderText();
-		} else {
+		}
+		else
+		{
 			$result = parent::adminRenderContent();
 		}
 
