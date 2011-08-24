@@ -370,22 +370,6 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Изменение текста на странице
-	 */
-	function text()
-	{
-		global $Eresus, $page;
-
-		$item = $Eresus->db->selectItem('pages', '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
-		$item['content'] = $Eresus->db->escape($Eresus->request['arg']['content']);
-		$item = array('id' => $item['id'], 'content' => $item['content']);
-		$Eresus->db->updateItem('pages', $item, '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
-
-		HTTP::redirect(str_replace('&amp;', '&', $page->url(array('action' => 'text'))));
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
 	 * Замена макросов в строке
 	 *
 	 * @param string $template  Шаблон
@@ -547,32 +531,6 @@ class TArticles extends TListContentPlugin
 		$result = $page->renderForm($form, $item);
 
 		return $result;
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
-	 * Диалог редактирования текста на странице
-	 *
-	 * @return string
-	 */
-	function adminRenderText()
-	{
-		global $Eresus, $page;
-
-		$item = $Eresus->db->selectItem('pages', '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
-		$form = array(
-			'name' => 'contentEditor',
-			'caption' => 'Текст на странице',
-			'width' => '95%',
-			'fields' => array(
-				array('type' => 'hidden', 'name' => 'action', 'value' => 'textupdate'),
-				array('type' => 'html', 'name' => 'content', 'height' => '400px', 'value' => $item['content']),
-			),
-			'buttons'=> array('ok', 'reset'),
-		);
-
-		$result = $page->renderForm($form);
-		return $page->renderTabs($this->table['tabs']) . $result;
 	}
 	//-----------------------------------------------------------------------------
 
@@ -844,4 +802,45 @@ class TArticles extends TListContentPlugin
 	}
 	//-----------------------------------------------------------------------------
 
+	/**
+	 * Изменение текста на странице
+	 */
+	private function text()
+	{
+		global $Eresus, $page;
+
+		$item = $Eresus->db->selectItem('pages', '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
+		$item['content'] = $Eresus->db->escape($Eresus->request['arg']['content']);
+		$item = array('id' => $item['id'], 'content' => $item['content']);
+		$Eresus->db->updateItem('pages', $item, '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
+
+		HTTP::redirect(str_replace('&amp;', '&', $page->url(array('action' => 'text'))));
+	}
+	//-----------------------------------------------------------------------------
+
+	/**
+	 * Диалог редактирования текста на странице
+	 *
+	 * @return string
+	 */
+	private function adminRenderText()
+	{
+		global $Eresus, $page;
+
+		$item = $Eresus->db->selectItem('pages', '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
+		$form = array(
+			'name' => 'contentEditor',
+			'caption' => 'Текст на странице',
+			'width' => '95%',
+			'fields' => array(
+				array('type' => 'hidden', 'name' => 'action', 'value' => 'textupdate'),
+				array('type' => 'html', 'name' => 'content', 'height' => '400px', 'value' => $item['content']),
+			),
+			'buttons'=> array('ok', 'reset'),
+		);
+
+		$result = $page->renderForm($form);
+		return $page->renderTabs($this->table['tabs']) . $result;
+	}
+	//-----------------------------------------------------------------------------
 }
