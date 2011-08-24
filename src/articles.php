@@ -34,35 +34,32 @@
  * $Id$
  */
 
-/**
- *
- * @var int
- */
-define('_ARTICLES_BLOCK_NONE', 0);
-
-/**
- *
- * @var int
- */
-define('_ARTICLES_BLOCK_LAST', 1);
-
-/**
- *
- * @var int
- */
-define('_ARTICLES_BLOCK_MANUAL', 2);
-
-
-
 
 /**
  * Класс плагина
  *
- * @package Plugins
- * @subpackage Articles
+ * @package Articles
  */
 class TArticles extends TListContentPlugin
 {
+	/**
+	 * Режим блока: блок отключен
+	 * @var int
+	 */
+	const BLOCK_NONE = 0;
+
+	/**
+	 * Режим блока: последние статьи
+	 * @var int
+	 */
+	const BLOCK_LAST = 1;
+
+	/**
+	 * Режим блока: избранные статьи
+	 * @var int
+	 */
+	const BLOCK_MANUAL = 2;
+
 	/**
 	 * Имя плагина
 	 * @var string
@@ -212,7 +209,7 @@ class TArticles extends TListContentPlugin
 		if ($this->table['sortMode'] == 'position')
 			$this->table['controls']['position'] = '';
 
-		if ($this->settings['blockMode'] == _ARTICLES_BLOCK_MANUAL) {
+		if ($this->settings['blockMode'] == self::BLOCK_MANUAL) {
 
 			$temp = array_shift($this->table['columns']);
 			array_unshift($this->table['columns'], array('name' => 'block', 'align'=>'center',
@@ -474,7 +471,7 @@ class TArticles extends TListContentPlugin
 				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок', 'width' => '100%', 'maxlength' => '100'),
 				array ('type' => 'html', 'name' => 'text', 'label' => 'Полный текст', 'height' => '200px'),
 				array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание', 'height' => '10'),
-				array ('type' => ($this->settings['blockMode'] == _ARTICLES_BLOCK_MANUAL)?'checkbox':'hidden', 'name' => 'block', 'label' => 'Показывать в блоке'),
+				array ('type' => ($this->settings['blockMode'] == self::BLOCK_MANUAL)?'checkbox':'hidden', 'name' => 'block', 'label' => 'Показывать в блоке'),
 				array ('type' => 'file', 'name' => 'image', 'label' => 'Картинка', 'width' => '100'),
 			),
 			'buttons' => array('ok', 'cancel'),
@@ -517,7 +514,7 @@ class TArticles extends TListContentPlugin
 				array ('type' => 'html', 'name' => 'text', 'label' => 'Полный текст', 'height' => '200px'),
 				array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание', 'height' => '5'),
 				array ('type' => 'checkbox', 'name'=>'updatePreview', 'label'=>'Обновить краткое описание автоматически', 'value' => false),
-				array ('type' => ($this->settings['blockMode'] == _ARTICLES_BLOCK_MANUAL)?'checkbox':'hidden', 'name' => 'block', 'label' => 'Показывать в блоке'),
+				array ('type' => ($this->settings['blockMode'] == self::BLOCK_MANUAL)?'checkbox':'hidden', 'name' => 'block', 'label' => 'Показывать в блоке'),
 				array ('type' => 'file', 'name' => 'image', 'label' => 'Картинка', 'width' => '100', 'comment'=>(is_file($Eresus->fdata.$this->name.'/'.$item['image'].'.jpg')?'<a href="'.$page->url(array('action'=>'delimage')).'">Удалить</a>':'')),
 				array ('type' => 'divider'),
 				array ('type' => 'edit', 'name' => 'section', 'label' => 'Раздел', 'access'=>ADMIN),
@@ -565,7 +562,7 @@ class TArticles extends TListContentPlugin
 				array('type'=>'select','name'=>'listSortMode','label'=>'Сортировка', 'values' => array('posted', 'position'), 'items' => array('По дате добавления', 'Ручная')),
 				array('type'=>'checkbox','name'=>'listSortDesc','label'=>'В обратном порядке'),
 				array('type'=>'header', 'value' => 'Блок статей'),
-				array('type'=>'select','name'=>'blockMode','label'=>'Режим блока статей', 'values' => array(_ARTICLES_BLOCK_NONE, _ARTICLES_BLOCK_LAST, _ARTICLES_BLOCK_MANUAL), 'items' => array('Отключить','Последние статьи','Ручной выбор статей')),
+				array('type'=>'select','name'=>'blockMode','label'=>'Режим блока статей', 'values' => array(self::BLOCK_NONE, self::BLOCK_LAST, self::BLOCK_MANUAL), 'items' => array('Отключить','Последние статьи','Ручной выбор статей')),
 				array('type'=>'memo','name'=>'tmplBlockItem','label'=>'Шаблон элемента блока','height'=>'3'),
 				array('type'=>'edit','name'=>'blockCount','label'=>'Количество', 'width'=>'50px'),
 				array('type'=>'header', 'value' => 'Краткое описание'),
@@ -826,7 +823,7 @@ class TArticles extends TListContentPlugin
 		$result = '';
 		$items = $Eresus->db->select($this->table['name'],
 			"`active`='1'" . (
-				$this->settings['blockMode'] == _ARTICLES_BLOCK_MANUAL ? " AND `block`='1'" : ''
+				$this->settings['blockMode'] == self::BLOCK_MANUAL ? " AND `block`='1'" : ''
 			),
 			($this->table['sortDesc'] ? '-' : '') . $this->table['sortMode'], '',
 			$this->settings['blockCount']);
