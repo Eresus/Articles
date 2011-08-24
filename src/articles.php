@@ -63,48 +63,47 @@ define('_ARTICLES_BLOCK_MANUAL', 2);
  */
 class TArticles extends TListContentPlugin
 {
-
 	/**
 	 * Имя плагина
 	 * @var string
 	 */
-	var $name = 'articles';
+	public $name = 'articles';
 
 	/**
 	 * Требуемая версия ядра
 	 * @var string
 	 */
-	public $kernel = '2.16a';
+	public $kernel = '2.14b';
 
 	/**
 	 * Тип плагина
 	 * @var string
 	 */
-	var $type = 'client,content,ondemand';
+	public $type = 'client,content,ondemand';
 
 	/**
 	 * Название плагина
 	 * @var string
 	 */
-	var $title = 'Статьи';
+	public $title = 'Статьи';
 
 	/**
 	 * Версия плагина
 	 * @var string
 	 */
-	var $version = '2.15a';
+	public $version = '2.16a';
 
 	/**
 	 * Описание плагина
 	 * @var string
 	 */
-	var $description = 'Публикация статей';
+	public $description = 'Публикация статей';
 
 	/**
 	 * Настройки плагина
 	 * @var array
 	 */
-	var $settings = array(
+	public $settings = array(
 		'itemsPerPage' => 10,
 		'tmplList' => '
 			<h1>$(title)</h1>
@@ -150,7 +149,7 @@ class TArticles extends TListContentPlugin
 	 * Таблица списка объектов
 	 * @var array
 	 */
-	var $table = array (
+	public $table = array (
 		'name' => 'articles',
 		'key'=> 'id',
 		'sortMode' => 'posted',
@@ -194,20 +193,6 @@ class TArticles extends TListContentPlugin
 	);
 
 	/**
-	 * Процедура установки плагина
-	 *
-	 */
-	function install()
-	{
-		parent::install();
-
-		umask(0000);
-		if (!file_exists(filesRoot.'data/'.$this->name))
-			mkdir(filesRoot.'data/'.$this->name, 0777);
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
 	 * Конструктор
 	 *
 	 * Производит регистрацию обработчиков событий
@@ -243,6 +228,20 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
+	 * Процедура установки плагина
+	 *
+	 */
+	public function install()
+	{
+		parent::install();
+
+		umask(0000);
+		if (!file_exists(filesRoot.'data/'.$this->name))
+			mkdir(filesRoot.'data/'.$this->name, 0777);
+	}
+	//-----------------------------------------------------------------------------
+
+	/**
 	 * Сохранение настроек
 	 */
 	function updateSettings()
@@ -264,40 +263,9 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Создание краткого текста
-	 *
-	 * @param string $text
-	 * @return string
-	 */
-	function createPreview($text)
-	{
-		$text = trim(preg_replace('/<.+>/Us',' ',$text));
-		$text = str_replace(array("\n", "\r"), ' ', $text);
-		$text = preg_replace('/\s{2,}/', ' ', $text);
-
-		if (!$this->settings['previewMaxSize'])
-			$this->settings['previewMaxSize'] = 500;
-
-		if ($this->settings['previewSmartSplit']) {
-
-			preg_match("/\A(.{1,".$this->settings['previewMaxSize']."})(\.\s|\.|\Z)/s", $text, $result);
-			$result = $result[1].'...';
-
-		} else {
-
-			$result = substr($text, 0, $this->settings['previewMaxSize']);
-			if (strlen($text) > $this->settings['previewMaxSize'])
-				$result .= '...';
-
-		}
-		return $result;
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
 	 * Добавление статьи в БД
 	 */
-	function insert()
+	public function insert()
 	{
 		global $Eresus, $page;
 
@@ -338,7 +306,7 @@ class TArticles extends TListContentPlugin
 	/**
 	 * Изменение статьи в БД
 	 */
-	function update()
+	public function update()
 	{
 		global $Eresus, $page;
 
@@ -385,7 +353,7 @@ class TArticles extends TListContentPlugin
 	 *
 	 * @param int $id  Идентификатор статьи
 	 */
-	function delete($id)
+	public function delete($id)
 	{
 		global $Eresus, $page;
 
@@ -841,4 +809,36 @@ class TArticles extends TListContentPlugin
 		HTTP::redirect(str_replace('&amp;', '&', $page->url()));
 	}
 	//-----------------------------------------------------------------------------
+
+	/**
+	 * Создание краткого текста
+	 *
+	 * @param string $text
+	 * @return string
+	 */
+	private function createPreview($text)
+	{
+		$text = trim(preg_replace('/<.+>/Us',' ',$text));
+		$text = str_replace(array("\n", "\r"), ' ', $text);
+		$text = preg_replace('/\s{2,}/', ' ', $text);
+
+		if (!$this->settings['previewMaxSize'])
+			$this->settings['previewMaxSize'] = 500;
+
+		if ($this->settings['previewSmartSplit']) {
+
+			preg_match("/\A(.{1,".$this->settings['previewMaxSize']."})(\.\s|\.|\Z)/s", $text, $result);
+			$result = $result[1].'...';
+
+		} else {
+
+			$result = substr($text, 0, $this->settings['previewMaxSize']);
+			if (strlen($text) > $this->settings['previewMaxSize'])
+				$result .= '...';
+
+		}
+		return $result;
+	}
+	//-----------------------------------------------------------------------------
+
 }
