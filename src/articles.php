@@ -455,13 +455,12 @@ class TArticles extends TListContentPlugin
 	}
 	//-----------------------------------------------------------------------------
 
-
 	/**
 	 * Диалог добавления статьи
 	 *
 	 * @return string
 	 */
-	function adminAddItem()
+	public function adminAddItem()
 	{
 		global $page, $Eresus;
 
@@ -491,7 +490,7 @@ class TArticles extends TListContentPlugin
 	 *
 	 * @return string
 	 */
-	function adminEditItem()
+	public function adminEditItem()
 	{
 		global $Eresus, $page;
 
@@ -538,7 +537,7 @@ class TArticles extends TListContentPlugin
 	 * Диалог настроек
 	 * @return string
 	 */
-	function settings()
+	public function settings()
 	{
 		global $page;
 
@@ -606,7 +605,7 @@ class TArticles extends TListContentPlugin
 	 *
 	 * @return string
 	 */
-	function clientRenderContent()
+	public function clientRenderContent()
 	{
 		global $Eresus, $page;
 
@@ -637,7 +636,7 @@ class TArticles extends TListContentPlugin
 	 *              $options['oldordering'] bool Сортировать элементы
 	 * @return string
 	 */
-	function clientRenderList($options = null)
+	public function clientRenderList($options = null)
 	{
 		global $Eresus, $page;
 
@@ -658,7 +657,7 @@ class TArticles extends TListContentPlugin
 	 * @param array $item  Свойства статьи
 	 * @return string
 	 */
-	function clientRenderListItem($item)
+	public function clientRenderListItem($item)
 	{
 		$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatPreview']);
 		$result = $this->replaceMacros($this->settings['tmplListItem'], $item);
@@ -671,7 +670,7 @@ class TArticles extends TListContentPlugin
 	 *
 	 * @return string
 	 */
-	function clientRenderItem()
+	public function clientRenderItem()
 	{
 		global $Eresus, $page;
 
@@ -706,7 +705,7 @@ class TArticles extends TListContentPlugin
 	 * @param string $text  HMTL страницы
 	 * @return string
 	 */
-	function clientOnPageRender($text)
+	public function clientOnPageRender($text)
 	{
 		global $page;
 
