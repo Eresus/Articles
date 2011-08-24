@@ -201,16 +201,20 @@ class TArticles extends TListContentPlugin
 		parent::__construct();
 
 		if ($this->settings['blockMode'])
+		{
 			$Eresus->plugins->events['clientOnPageRender'][] = $this->name;
+		}
 
 		$this->table['sortMode'] = $this->settings['listSortMode'];
 		$this->table['sortDesc'] = $this->settings['listSortDesc'];
 
 		if ($this->table['sortMode'] == 'position')
+		{
 			$this->table['controls']['position'] = '';
+		}
 
-		if ($this->settings['blockMode'] == self::BLOCK_MANUAL) {
-
+		if ($this->settings['blockMode'] == self::BLOCK_MANUAL)
+		{
 			$temp = array_shift($this->table['columns']);
 			array_unshift($this->table['columns'], array('name' => 'block', 'align'=>'center',
 				'replace' => array(
@@ -218,7 +222,6 @@ class TArticles extends TListContentPlugin
 					1 => '<span title="Показыватется в блоке статей">*</span>'
 				)
 			), $temp);
-
 		}
 
 	}
