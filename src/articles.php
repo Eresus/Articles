@@ -4,13 +4,13 @@
  *
  * Публикация статей
  *
- * @version 2.15
+ * @version 2.16
  *
  * @copyright 2005, ProCreat Systems, http://procreat.ru/
  * @copyright 2007, Eresus Group, http://eresus.ru/
  * @copyright 2010, ООО "Два слона", http://dvaslona.ru/
  * @license http://www.gnu.org/licenses/gpl.txt  GPL License 3
- * @author Mikhail Krasilnikov <mk@procreat.ru>
+ * @author Михаил Красильников <mihalych@vsepofigu.ru>
  * @author БерсЪ <bersz@procreat.ru>
  *
  * Данная программа является свободным программным обеспечением. Вы
@@ -74,7 +74,7 @@ class TArticles extends TListContentPlugin
 	 * Требуемая версия ядра
 	 * @var string
 	 */
-	public $kernel = '2.14b';
+	public $kernel = '2.16a';
 
 	/**
 	 * Тип плагина
