@@ -403,6 +403,7 @@ class TArticles extends TListContentPlugin
 				'$(text)',
 				'$(posted)',
 				'$(link)',
+				'$(section)',
 				'$(image)',
 				'$(thumbnail)',
 				'$(imageWidth)',
@@ -416,6 +417,7 @@ class TArticles extends TListContentPlugin
 				StripSlashes($item['text']),
 				$item['posted'],
 				$page->clientURL($item['section']).$item['id'].'/',
+				$page->clientURL($item['section']),
 				$image,
 				$thumbnail,
 				$width,
@@ -585,6 +587,7 @@ class TArticles extends TListContentPlugin
 					"<b>$(text)</b> - полный текст<br />\n".
 					"<b>$(posted)</b> - дата публикации<br />\n".
 					"<b>$(link)</b> - адрес статьи (URL)<br />\n".
+					"<b>$(section)</b> - адрес списка статей (URL)<br />\n".
 					"<b>$(image)</b> - адрес картинки (URL)<br />\n".
 					"<b>$(thumbnail)</b> - адрес миниаютюры (URL)<br />\n".
 					"<b>$(imageWidth)</b> - ширина картинки<br />\n".
