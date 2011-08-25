@@ -250,13 +250,11 @@ class TArticles extends TListContentPlugin
 
 		$item = $Eresus->db->selectItem('`plugins`', "`name`='".$this->name."'");
 		$item['settings'] = decodeOptions($item['settings']);
-
 		foreach ($this->settings as $key => $value)
-			$this->settings[$key] = $Eresus->request['arg'][$key] ? $Eresus->request['arg'][$key] : '';
+			$this->settings[$key] = isset($Eresus->request['arg'][$key]) ? $Eresus->request['arg'][$key] : '';
 
 		if ($this->settings['blockMode'])
 			$item['type'] = 'client,content'; else $item['type'] = 'client,content,ondemand';
-
 		$item['settings'] = encodeOptions($this->settings);
 		$Eresus->db->updateItem('plugins', $item, "`name`='".$this->name."'");
 	}
