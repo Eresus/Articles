@@ -473,7 +473,7 @@ class TArticles extends TListContentPlugin
 			'fields' => array (
 				array ('type'=>'hidden','name'=>'action', 'value'=>'insert'),
 				array ('type' => 'hidden', 'name' => 'section', 'value' => arg('section')),
-				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок', 'width' => '100%', 'maxlength' => '100'),
+				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок', 'width' => '100%', 'maxlength' => '255'),
 				array ('type' => 'html', 'name' => 'text', 'label' => 'Полный текст', 'height' => '200px'),
 				array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание', 'height' => '10'),
 				array ('type' => ($this->settings['blockMode'] == self::BLOCK_MANUAL)?'checkbox':'hidden', 'name' => 'block', 'label' => 'Показывать в блоке'),
@@ -515,7 +515,7 @@ class TArticles extends TListContentPlugin
 			'width' => '95%',
 			'fields' => array (
 				array('type'=>'hidden','name'=>'update', 'value'=>$item['id']),
-				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок', 'width' => '100%', 'maxlength' => '100'),
+				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок', 'width' => '100%', 'maxlength' => '255'),
 				array ('type' => 'html', 'name' => 'text', 'label' => 'Полный текст', 'height' => '200px'),
 				array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание', 'height' => '5'),
 				array ('type' => 'checkbox', 'name'=>'updatePreview', 'label'=>'Обновить краткое описание автоматически', 'value' => false),
