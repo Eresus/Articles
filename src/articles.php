@@ -231,15 +231,18 @@ class TArticles extends TListContentPlugin
 	/**
 	 * Процедура установки плагина
 	 *
+	 * @return void
 	 */
 	public function install()
 	{
 		parent::install();
 
-		umask(0000);
-		if (!file_exists($Eresus->fdata . $this->name))
+		$dir = $GLOBALS['Eresus']->fdata . $this->name;
+		if (!file_exists($dir))
 		{
-			mkdir($Eresus->fdata . $this->name, 0777);
+			$umask = umask(0000);
+			mkdir($dir, 0777);
+			umask($umask);
 		}
 	}
 	//-----------------------------------------------------------------------------
