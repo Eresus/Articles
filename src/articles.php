@@ -617,7 +617,7 @@ class TArticles extends TListContentPlugin
 				array('type'=>'header', 'value' => 'Блок статей'),
 				array('type'=>'select','name'=>'blockMode','label'=>'Режим блока статей',
 					'values' => array(self::BLOCK_NONE, self::BLOCK_LAST, self::BLOCK_MANUAL),
-					'items' => array('Отключить','Последние статьи','Ручной выбор статей')),
+					'items' => array('Отключить','Последние статьи','Избранные статьи')),
 				array('type'=>'memo','name'=>'tmplBlockItem','label'=>'Шаблон элемента блока',
 					'height'=>'3'),
 				array('type'=>'edit','name'=>'blockCount','label'=>'Количество', 'width'=>'50px'),
