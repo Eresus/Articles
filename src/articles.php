@@ -4,14 +4,15 @@
  *
  * Публикация статей
  *
- * @version 2.15
+ * @version 2.16
  *
  * @copyright 2005, ProCreat Systems, http://procreat.ru/
  * @copyright 2007, Eresus Group, http://eresus.ru/
  * @copyright 2010, ООО "Два слона", http://dvaslona.ru/
  * @license http://www.gnu.org/licenses/gpl.txt  GPL License 3
- * @author Mikhail Krasilnikov <mk@procreat.ru>
+ * @author Михаил Красильников <mihalych@vsepofigu.ru>
  * @author БерсЪ <bersz@procreat.ru>
+ * @author Андрей Афонинский
  *
  * Данная программа является свободным программным обеспечением. Вы
  * вправе распространять ее и/или модифицировать в соответствии с
@@ -34,41 +35,37 @@
  * $Id$
  */
 
-/**
- *
- * @var int
- */
-define('_ARTICLES_BLOCK_NONE', 0);
-
-/**
- *
- * @var int
- */
-define('_ARTICLES_BLOCK_LAST', 1);
-
-/**
- *
- * @var int
- */
-define('_ARTICLES_BLOCK_MANUAL', 2);
-
-
-
 
 /**
  * Класс плагина
  *
- * @package Plugins
- * @subpackage Articles
+ * @package Articles
  */
 class TArticles extends TListContentPlugin
 {
+	/**
+	 * Режим блока: блок отключен
+	 * @var int
+	 */
+	const BLOCK_NONE = 0;
+
+	/**
+	 * Режим блока: последние статьи
+	 * @var int
+	 */
+	const BLOCK_LAST = 1;
+
+	/**
+	 * Режим блока: избранные статьи
+	 * @var int
+	 */
+	const BLOCK_MANUAL = 2;
 
 	/**
 	 * Имя плагина
 	 * @var string
 	 */
-	var $name = 'articles';
+	public $name = 'articles';
 
 	/**
 	 * Требуемая версия ядра
@@ -80,31 +77,31 @@ class TArticles extends TListContentPlugin
 	 * Тип плагина
 	 * @var string
 	 */
-	var $type = 'client,content,ondemand';
+	public $type = 'client,content,ondemand';
 
 	/**
 	 * Название плагина
 	 * @var string
 	 */
-	var $title = 'Статьи';
+	public $title = 'Статьи';
 
 	/**
 	 * Версия плагина
 	 * @var string
 	 */
-	var $version = '2.15';
+	public $version = '2.16b';
 
 	/**
 	 * Описание плагина
 	 * @var string
 	 */
-	var $description = 'Публикация статей';
+	public $description = 'Публикация статей';
 
 	/**
 	 * Настройки плагина
 	 * @var array
 	 */
-	var $settings = array(
+	public $settings = array(
 		'itemsPerPage' => 10,
 		'tmplList' => '
 			<h1>$(title)</h1>
@@ -150,7 +147,7 @@ class TArticles extends TListContentPlugin
 	 * Таблица списка объектов
 	 * @var array
 	 */
-	var $table = array (
+	public $table = array (
 		'name' => 'articles',
 		'key'=> 'id',
 		'sortMode' => 'posted',
@@ -194,20 +191,6 @@ class TArticles extends TListContentPlugin
 	);
 
 	/**
-	 * Процедура установки плагина
-	 *
-	 */
-	function install()
-	{
-		parent::install();
-
-		umask(0000);
-		if (!file_exists(filesRoot.'data/'.$this->name))
-			mkdir(filesRoot.'data/'.$this->name, 0777);
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
 	 * Конструктор
 	 *
 	 * Производит регистрацию обработчиков событий
@@ -219,16 +202,20 @@ class TArticles extends TListContentPlugin
 		parent::__construct();
 
 		if ($this->settings['blockMode'])
+		{
 			$Eresus->plugins->events['clientOnPageRender'][] = $this->name;
+		}
 
 		$this->table['sortMode'] = $this->settings['listSortMode'];
 		$this->table['sortDesc'] = $this->settings['listSortDesc'];
 
 		if ($this->table['sortMode'] == 'position')
+		{
 			$this->table['controls']['position'] = '';
+		}
 
-		if ($this->settings['blockMode'] == _ARTICLES_BLOCK_MANUAL) {
-
+		if ($this->settings['blockMode'] == self::BLOCK_MANUAL)
+		{
 			$temp = array_shift($this->table['columns']);
 			array_unshift($this->table['columns'], array('name' => 'block', 'align'=>'center',
 				'replace' => array(
@@ -236,9 +223,27 @@ class TArticles extends TListContentPlugin
 					1 => '<span title="Показыватется в блоке статей">*</span>'
 				)
 			), $temp);
-
 		}
 
+	}
+	//-----------------------------------------------------------------------------
+
+	/**
+	 * Процедура установки плагина
+	 *
+	 * @return void
+	 */
+	public function install()
+	{
+		parent::install();
+
+		$dir = $GLOBALS['Eresus']->fdata . $this->name;
+		if (!file_exists($dir))
+		{
+			$umask = umask(0000);
+			mkdir($dir, 0777);
+			umask($umask);
+		}
 	}
 	//-----------------------------------------------------------------------------
 
@@ -251,55 +256,32 @@ class TArticles extends TListContentPlugin
 
 		$item = $Eresus->db->selectItem('`plugins`', "`name`='".$this->name."'");
 		$item['settings'] = decodeOptions($item['settings']);
-
-		foreach ($this->settings as $key => $value)
-			$this->settings[$key] = $Eresus->request['arg'][$key] ? $Eresus->request['arg'][$key] : '';
+		$keys = array_keys($this->settings);
+		foreach ($keys as $key)
+		{
+			$this->settings[$key] = isset($Eresus->request['arg'][$key]) ?
+				$Eresus->request['arg'][$key] : '';
+		}
 
 		if ($this->settings['blockMode'])
-			$item['type'] = 'client,content'; else $item['type'] = 'client,content,ondemand';
-
+		{
+			$item['type'] = 'client,content';
+		}
+		else
+		{
+			$item['type'] = 'client,content,ondemand';
+		}
 		$item['settings'] = encodeOptions($this->settings);
 		$Eresus->db->updateItem('plugins', $item, "`name`='".$this->name."'");
 	}
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Создание краткого текста
-	 *
-	 * @param string $text
-	 * @return string
-	 */
-	function createPreview($text)
-	{
-		$text = trim(preg_replace('/<.+>/Us',' ',$text));
-		$text = str_replace(array("\n", "\r"), ' ', $text);
-		$text = preg_replace('/\s{2,}/', ' ', $text);
-
-		if (!$this->settings['previewMaxSize'])
-			$this->settings['previewMaxSize'] = 500;
-
-		if ($this->settings['previewSmartSplit']) {
-
-			preg_match("/\A(.{1,".$this->settings['previewMaxSize']."})(\.\s|\.|\Z)/s", $text, $result);
-			$result = $result[1].'...';
-
-		} else {
-
-			$result = substr($text, 0, $this->settings['previewMaxSize']);
-			if (strlen($text) > $this->settings['previewMaxSize'])
-				$result .= '...';
-
-		}
-		return $result;
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
 	 * Добавление статьи в БД
 	 */
-	function insert()
+	public function insert()
 	{
-		global $Eresus, $page;
+		global $Eresus;
 
 		$item = array();
 		$item['section'] = arg('section', 'int');
@@ -318,14 +300,16 @@ class TArticles extends TListContentPlugin
 
 		if (is_uploaded_file($_FILES['image']['tmp_name']))
 		{
-			$tmpFile = $Eresus->fdata . '/' . $this->name . '/uploaded.bin';
+			$tmpFile = $Eresus->fdata . $this->name . '/uploaded.bin';
 			upload('image', $tmpFile);
 
 			$item['image'] = $item['id'].'_'.time();
-			$filename = filesRoot.'data/articles/'.$item['image'];
+			$filename = $Eresus->fdata . 'articles/'.$item['image'];
 			useLib('glib');
-			thumbnail($tmpFile, $filename.'.jpg', $this->settings['imageWidth'], $this->settings['imageHeight'], $this->settings['imageColor']);
-			thumbnail($tmpFile, $filename.'-thmb.jpg', $this->settings['THimageWidth'], $this->settings['THimageHeight'], $this->settings['imageColor']);
+			thumbnail($tmpFile, $filename.'.jpg', $this->settings['imageWidth'],
+				$this->settings['imageHeight'], $this->settings['imageColor']);
+			thumbnail($tmpFile, $filename.'-thmb.jpg', $this->settings['THimageWidth'],
+				$this->settings['THimageHeight'], $this->settings['imageColor']);
 			unlink($tmpFile);
 
 			$Eresus->db->updateItem($this->table['name'], $item, '`id` = "'.$item['id'].'"');
@@ -338,15 +322,17 @@ class TArticles extends TListContentPlugin
 	/**
 	 * Изменение статьи в БД
 	 */
-	function update()
+	public function update()
 	{
-		global $Eresus, $page;
+		global $Eresus;
 
 		$item = $Eresus->db->selectItem($this->table['name'], "`id`='".arg('update', 'int')."'");
 		$image = $item['image'];
 		$item['section'] = arg('section', 'int');
 		if ( ! is_null(arg('section')) )
+		{
 			$item['active'] = arg('active', 'int');
+		}
 		// FIXME Не задаётся position. Наверно надо учесть режим сортировки
 		$item['posted'] = arg('posted', 'dbsafe');
 		$item['block'] = arg('block', 'int');
@@ -354,24 +340,28 @@ class TArticles extends TListContentPlugin
 		$item['text'] = arg('text', 'dbsafe');
 		$item['preview'] = arg('preview', 'dbsafe');
 		if (empty($item['preview']) || arg('updatePreview'))
+		{
 			$item['preview'] = $this->createPreview($item['text']);
+		}
 
 		if (is_uploaded_file($_FILES['image']['tmp_name']))
 		{
-			$tmpFile = $Eresus->fdata . '/' . $this->name . '/uploaded.bin';
+			$tmpFile = $Eresus->fdata . $this->name . '/uploaded.bin';
 			upload('image', $tmpFile);
 
-			$filename = filesRoot.'data/articles/'.$image;
+			$filename = $Eresus->fdata . 'articles/'.$image;
 			if (($image != '') && (file_exists($filename.'.jpg')))
 			{
 				unlink($filename.'.jpg');
 				unlink($filename.'-thmb.jpg');
 			}
 			$item['image'] = $item['id'].'_'.time();
-			$filename = filesRoot.'data/articles/'.$item['image'];
+			$filename = $Eresus->fdata . 'articles/'.$item['image'];
 			useLib('glib');
-			thumbnail($tmpFile, $filename.'.jpg', $this->settings['imageWidth'], $this->settings['imageHeight'], $this->settings['imageColor']);
-			thumbnail($tmpFile, $filename.'-thmb.jpg', $this->settings['THimageWidth'], $this->settings['THimageHeight'], $this->settings['imageColor']);
+			thumbnail($tmpFile, $filename.'.jpg', $this->settings['imageWidth'],
+				$this->settings['imageHeight'], $this->settings['imageColor']);
+			thumbnail($tmpFile, $filename.'-thmb.jpg', $this->settings['THimageWidth'],
+				$this->settings['THimageHeight'], $this->settings['imageColor']);
 			unlink($tmpFile);
 		}
 		$Eresus->db->updateItem($this->table['name'], $item, "`id`='".arg('update', 'int')."'");
@@ -385,12 +375,12 @@ class TArticles extends TListContentPlugin
 	 *
 	 * @param int $id  Идентификатор статьи
 	 */
-	function delete($id)
+	public function delete($id)
 	{
-		global $Eresus, $page;
+		global $Eresus;
 
 		$item = $Eresus->db->selectItem($this->table['name'], "`id`='".arg('delete', 'int')."'");
-		$filename = filesRoot.'data/'.$this->name.'/'.$item['image'];
+		$filename = $Eresus->data . $this->name.'/'.$item['image'];
 		if (file_exists($filename.'.jpg'))
 		{
 			unlink($filename.'.jpg');
@@ -398,22 +388,6 @@ class TArticles extends TListContentPlugin
 		}
 
 		parent::delete($id);
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
-	 * Изменение текста на странице
-	 */
-	function text()
-	{
-		global $Eresus, $page;
-
-		$item = $Eresus->db->selectItem('pages', '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
-		$item['content'] = $Eresus->db->escape($Eresus->request['arg']['content']);
-		$item = array('id' => $item['id'], 'content' => $item['content']);
-		$Eresus->db->updateItem('pages', $item, '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
-
-		HTTP::redirect(str_replace('&amp;', '&', $page->url(array('action' => 'text'))));
 	}
 	//-----------------------------------------------------------------------------
 
@@ -426,12 +400,12 @@ class TArticles extends TListContentPlugin
 	 */
 	function replaceMacros($template, $item)
 	{
-		global $Eresus, $page;
+		global $page;
 
-		if (file_exists(filesRoot.'data/articles/'.$item['image'].'.jpg'))
+		if (file_exists($GLOBALS['Eresus']->fdata . 'articles/'.$item['image'].'.jpg'))
 		{
-			$image = httpRoot.'data/articles/'.$item['image'].'.jpg';
-			$thumbnail = httpRoot.'data/articles/'.$item['image'].'-thmb.jpg';
+			$image = $GLOBALS['Eresus']->data . 'articles/'.$item['image'].'.jpg';
+			$thumbnail = $GLOBALS['Eresus']->data . 'articles/'.$item['image'].'-thmb.jpg';
 			$width = $this->settings['imageWidth'];
 			$height = $this->settings['imageHeight'];
 			$THwidth = $this->settings['THimageWidth'];
@@ -440,7 +414,7 @@ class TArticles extends TListContentPlugin
 		}
 		else
 		{
-			$thumbnail = $image = styleRoot.'dot.gif';
+			$thumbnail = $image = $GLOBALS['Eresus']->style . 'dot.gif';
 			$width = $height = $THwidth = $THheight = 1;
 		}
 
@@ -451,6 +425,7 @@ class TArticles extends TListContentPlugin
 				'$(text)',
 				'$(posted)',
 				'$(link)',
+				'$(section)',
 				'$(image)',
 				'$(thumbnail)',
 				'$(imageWidth)',
@@ -464,6 +439,7 @@ class TArticles extends TListContentPlugin
 				StripSlashes($item['text']),
 				$item['posted'],
 				$page->clientURL($item['section']).$item['id'].'/',
+				$page->clientURL($item['section']),
 				$image,
 				$thumbnail,
 				$width,
@@ -484,15 +460,16 @@ class TArticles extends TListContentPlugin
 	 */
 	function adminRenderContent()
 	{
-		global $Eresus, $page;
-
-		if (!is_null(arg('action')) && arg('action') == 'textupdate' && method_exists($this, 'text')) {
-			// редактировать текст на странице
+		if (!is_null(arg('action')) && arg('action') == 'textupdate')
+		{
 			$result = $this->text();
-		} else if (!is_null(arg('action')) && arg('action') == 'text' && method_exists($this, 'adminRenderText')) {
-			// диалог редактирования текста на странице
+		}
+		elseif (!is_null(arg('action')) && arg('action') == 'text')
+		{
 			$result = $this->adminRenderText();
-		} else {
+		}
+		else
+		{
 			$result = parent::adminRenderContent();
 		}
 
@@ -500,15 +477,14 @@ class TArticles extends TListContentPlugin
 	}
 	//-----------------------------------------------------------------------------
 
-
 	/**
 	 * Диалог добавления статьи
 	 *
 	 * @return string
 	 */
-	function adminAddItem()
+	public function adminAddItem()
 	{
-		global $page, $Eresus;
+		global $page;
 
 		$form = array(
 			'name' => 'newArticles',
@@ -517,10 +493,13 @@ class TArticles extends TListContentPlugin
 			'fields' => array (
 				array ('type'=>'hidden','name'=>'action', 'value'=>'insert'),
 				array ('type' => 'hidden', 'name' => 'section', 'value' => arg('section')),
-				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок', 'width' => '100%', 'maxlength' => '100'),
+				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок', 'width' => '100%',
+					'maxlength' => '255'),
 				array ('type' => 'html', 'name' => 'text', 'label' => 'Полный текст', 'height' => '200px'),
-				array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание', 'height' => '10'),
-				array ('type' => ($this->settings['blockMode'] == _ARTICLES_BLOCK_MANUAL)?'checkbox':'hidden', 'name' => 'block', 'label' => 'Показывать в блоке'),
+				array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание',
+					'height' => '10'),
+				array ('type' => ($this->settings['blockMode'] == self::BLOCK_MANUAL)?'checkbox':'hidden',
+					'name' => 'block', 'label' => 'Показывать в блоке'),
 				array ('type' => 'file', 'name' => 'image', 'label' => 'Картинка', 'width' => '100'),
 			),
 			'buttons' => array('ok', 'cancel'),
@@ -536,20 +515,33 @@ class TArticles extends TListContentPlugin
 	 *
 	 * @return string
 	 */
-	function adminEditItem()
+	public function adminEditItem()
 	{
 		global $Eresus, $page;
 
 		$item = $Eresus->db->selectItem($this->table['name'], "`id`='".arg('id', 'int')."'");
 
-		if (file_exists(filesRoot.'data/'.$this->name.'/'.$item['image'].'-thmb.jpg'))
-			$image = 'Изображение: <br /><img src="'.httpRoot.'data/'.$this->name.'/'.$item['image'].'-thmb.jpg" alt="" />';
-		else $image = '';
+		if (file_exists($Eresus->fdata . $this->name.'/'.$item['image'].'-thmb.jpg'))
+		{
+			$image = 'Изображение: <br /><img src="'. $Eresus->data . $this->name.'/'.$item['image'].
+				'-thmb.jpg" alt="" />';
+		}
+		else
+		{
+			$image = '';
+		}
 
-		if (arg('action', 'word') == 'delimage') {
-			$filename = dataFiles.$this->name.'/'.$item['image'];
-			if (is_file($filename.'.jpg')) unlink($filename.'.jpg');
-			if (is_file($filename.'-thmb.jpg')) unlink($filename.'-thmb.jpg');
+		if (arg('action', 'word') == 'delimage')
+		{
+			$filename = $Eresus->fdata . $this->name.'/'.$item['image'];
+			if (is_file($filename.'.jpg'))
+			{
+				unlink($filename.'.jpg');
+			}
+			if (is_file($filename.'-thmb.jpg'))
+			{
+				unlink($filename.'-thmb.jpg');
+			}
 			HTTP::redirect($page->url());
 		}
 
@@ -559,12 +551,18 @@ class TArticles extends TListContentPlugin
 			'width' => '95%',
 			'fields' => array (
 				array('type'=>'hidden','name'=>'update', 'value'=>$item['id']),
-				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок', 'width' => '100%', 'maxlength' => '100'),
+				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок', 'width' => '100%',
+					'maxlength' => '255'),
 				array ('type' => 'html', 'name' => 'text', 'label' => 'Полный текст', 'height' => '200px'),
-				array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание', 'height' => '5'),
-				array ('type' => 'checkbox', 'name'=>'updatePreview', 'label'=>'Обновить краткое описание автоматически', 'value' => false),
-				array ('type' => ($this->settings['blockMode'] == _ARTICLES_BLOCK_MANUAL)?'checkbox':'hidden', 'name' => 'block', 'label' => 'Показывать в блоке'),
-				array ('type' => 'file', 'name' => 'image', 'label' => 'Картинка', 'width' => '100', 'comment'=>(is_file($Eresus->fdata.$this->name.'/'.$item['image'].'.jpg')?'<a href="'.$page->url(array('action'=>'delimage')).'">Удалить</a>':'')),
+				array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание',
+					'height' => '5'),
+				array ('type' => 'checkbox', 'name'=>'updatePreview',
+					'label'=>'Обновить краткое описание автоматически', 'value' => false),
+				array ('type' => ($this->settings['blockMode'] == self::BLOCK_MANUAL)?'checkbox':'hidden',
+					'name' => 'block', 'label' => 'Показывать в блоке'),
+				array ('type' => 'file', 'name' => 'image', 'label' => 'Картинка', 'width' => '100',
+					'comment'=>(is_file($Eresus->fdata.$this->name.'/'.$item['image'].'.jpg') ?
+						'<a href="'.$page->url(array('action'=>'delimage')).'">Удалить</a>' : '')),
 				array ('type' => 'divider'),
 				array ('type' => 'edit', 'name' => 'section', 'label' => 'Раздел', 'access'=>ADMIN),
 				array ('type' => 'edit', 'name'=>'posted', 'label'=>'Написано'),
@@ -580,36 +578,10 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Диалог редактирования текста на странице
-	 *
-	 * @return string
-	 */
-	function adminRenderText()
-	{
-		global $Eresus, $page;
-
-		$item = $Eresus->db->selectItem('pages', '`id`="' . (int)($Eresus->request['arg']['section']) . '"');
-		$form = array(
-			'name' => 'contentEditor',
-			'caption' => 'Текст на странице',
-			'width' => '95%',
-			'fields' => array(
-				array('type' => 'hidden', 'name' => 'action', 'value' => 'textupdate'),
-				array('type' => 'html', 'name' => 'content', 'height' => '400px', 'value' => $item['content']),
-			),
-			'buttons'=> array('ok', 'reset'),
-		);
-
-		$result = $page->renderForm($form);
-		return $page->renderTabs($this->table['tabs']) . $result;
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
 	 * Диалог настроек
 	 * @return string
 	 */
-	function settings()
+	public function settings()
 	{
 		global $page;
 
@@ -619,12 +591,15 @@ class TArticles extends TListContentPlugin
 			'width' => '500px',
 			'fields' => array (
 				array('type'=>'hidden','name'=>'update', 'value'=>$this->name),
-				array('type'=>'text','value'=>'Для вставки блока статей используйте макрос <b>$(ArticlesBlock)</b><br />'),
+				array('type'=>'text','value'=>
+					'Для вставки блока статей используйте макрос <b>$(ArticlesBlock)</b><br />'),
 				array('type'=>'header','value'=>'Параметры полнотекстового просмотра'),
-				array('type'=>'memo','name'=>'tmplItem','label'=>'Шаблон полнотекстового просмотра','height'=>'5'),
+				array('type'=>'memo','name'=>'tmplItem','label'=>'Шаблон полнотекстового просмотра',
+					'height'=>'5'),
 				array('type'=>'edit','name'=>'dateFormatFullText','label'=>'Формат даты', 'width'=>'100px'),
 				array('type'=>'header', 'value' => 'Параметры списка'),
-				array('type'=>'edit','name'=>'itemsPerPage','label'=>'Статей на страницу','width'=>'50px', 'maxlength'=>'2'),
+				array('type'=>'edit','name'=>'itemsPerPage','label'=>'Статей на страницу','width'=>'50px',
+					'maxlength'=>'2'),
 				array('type'=>'memo','name'=>'tmplList','label'=>'Шаблон списка','height'=>'3'),
 				array('type'=>'text','value'=>'
 					Макросы:<br />
@@ -632,38 +607,48 @@ class TArticles extends TListContentPlugin
 					<strong>$(content)</strong> - контент страницы,<br />
 					<strong>$(items)</strong> - список статей
 				'),
-				array('type'=>'memo','name'=>'tmplListItem','label'=>'Шаблон элемента списка','height'=>'5'),
+				array('type'=>'memo','name'=>'tmplListItem','label'=>'Шаблон элемента списка',
+					'height'=>'5'),
 				array('type'=>'edit','name'=>'dateFormatPreview','label'=>'Формат даты', 'width'=>'100px'),
-				array('type'=>'select','name'=>'listSortMode','label'=>'Сортировка', 'values' => array('posted', 'position'), 'items' => array('По дате добавления', 'Ручная')),
+				array('type'=>'select','name'=>'listSortMode','label'=>'Сортировка',
+					'values' => array('posted', 'position'),
+					'items' => array('По дате добавления', 'Ручная')),
 				array('type'=>'checkbox','name'=>'listSortDesc','label'=>'В обратном порядке'),
 				array('type'=>'header', 'value' => 'Блок статей'),
-				array('type'=>'select','name'=>'blockMode','label'=>'Режим блока статей', 'values' => array(_ARTICLES_BLOCK_NONE, _ARTICLES_BLOCK_LAST, _ARTICLES_BLOCK_MANUAL), 'items' => array('Отключить','Последние статьи','Ручной выбор статей')),
-				array('type'=>'memo','name'=>'tmplBlockItem','label'=>'Шаблон элемента блока','height'=>'3'),
+				array('type'=>'select','name'=>'blockMode','label'=>'Режим блока статей',
+					'values' => array(self::BLOCK_NONE, self::BLOCK_LAST, self::BLOCK_MANUAL),
+					'items' => array('Отключить','Последние статьи','Избранные статьи')),
+				array('type'=>'memo','name'=>'tmplBlockItem','label'=>'Шаблон элемента блока',
+					'height'=>'3'),
 				array('type'=>'edit','name'=>'blockCount','label'=>'Количество', 'width'=>'50px'),
 				array('type'=>'header', 'value' => 'Краткое описание'),
-				array('type'=>'edit','name'=>'previewMaxSize','label'=>'Макс. размер описания','width'=>'50px', 'maxlength'=>'4', 'comment'=>'символов'),
+				array('type'=>'edit','name'=>'previewMaxSize','label'=>'Макс. размер описания',
+					'width'=>'50px', 'maxlength'=>'4', 'comment'=>'символов'),
 				array('type'=>'checkbox','name'=>'previewSmartSplit','label'=>'"Умное" создание описания'),
 				array('type'=>'header', 'value' => 'Картинка'),
 				array('type'=>'edit','name'=>'imageWidth','label'=>'Ширина', 'width'=>'100px'),
 				array('type'=>'edit','name'=>'imageHeight','label'=>'Высота', 'width'=>'100px'),
 				array('type'=>'edit','name'=>'THimageWidth','label'=>'Ширина Миниатюры', 'width'=>'100px'),
 				array('type'=>'edit','name'=>'THimageHeight','label'=>'Высота Миниатюры', 'width'=>'100px'),
-				array('type'=>'edit','name'=>'imageColor','label'=>'Цвета фона', 'width'=>'100px', 'comment' => '#RRGGBB'),
+				array('type'=>'edit','name'=>'imageColor','label'=>'Цвета фона', 'width'=>'100px',
+					'comment' => '#RRGGBB'),
 				array('type'=>'divider'),
 				array('type'=>'text', 'value'=>
-					"Для создания шаблонов полнотекстового просмотра, элемента списка и элемента блока можно использовать макросы:<br />\n".
+					"Для создания шаблонов полнотекстового просмотра, элемента списка и элемента блока " .
+					"можно использовать макросы:<br />\n".
 					"<b>$(caption)</b> - заголовок<br />\n".
 					"<b>$(preview)</b> - краткий текст<br />\n".
 					"<b>$(text)</b> - полный текст<br />\n".
 					"<b>$(posted)</b> - дата публикации<br />\n".
 					"<b>$(link)</b> - адрес статьи (URL)<br />\n".
+					"<b>$(section)</b> - адрес списка статей (URL)<br />\n".
 					"<b>$(image)</b> - адрес картинки (URL)<br />\n".
 					"<b>$(thumbnail)</b> - адрес миниаютюры (URL)<br />\n".
 					"<b>$(imageWidth)</b> - ширина картинки<br />\n".
 					"<b>$(imageHeight)</b> - высота картинки<br />\n".
 					"<b>$(thumbnailWidth)</b> - ширина миниатюры<br />\n".
 					"<b>$(thumbnailHeight)</b> - высота миниатюры<br />\n"
-			 ),
+				),
 		),
 			'buttons' => array('ok', 'apply', 'cancel'),
 		);
@@ -677,55 +662,31 @@ class TArticles extends TListContentPlugin
 	 *
 	 * @return string
 	 */
-	function clientRenderContent()
+	public function clientRenderContent()
 	{
 		global $Eresus, $page;
 
-		if ($page->topic) {
+		if ($page->topic)
+		{
 			$acceptUrl = $Eresus->request['path'] .
 				($page->subpage !== 0 ? 'p' . $page->subpage . '/' : '') .
 				($page->topic !== false ? $page->topic . '/' : '');
-			if ($acceptUrl != $Eresus->request['url']) {
+			if ($acceptUrl != $Eresus->request['url'])
+			{
 				$page->httpError(404);
 			}
-		} else {
+		}
+		else
+		{
 			$acceptUrl = $Eresus->request['path'] .
 				($page->subpage !== 0 ? 'p' . $page->subpage . '/' : '');
-			if ($acceptUrl != $Eresus->request['url']) {
+			if ($acceptUrl != $Eresus->request['url'])
+			{
 				$page->httpError(404);
 			}
 		}
 
 		return parent::clientRenderContent();
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
-	 * Отрисовка блока статей
-	 *
-	 * @return string
-	 */
-	private function renderArticlesBlock()
-	{
-		global $Eresus;
-
-		$result = '';
-		$items = $Eresus->db->select($this->table['name'],
-			"`active`='1'" . (
-				$this->settings['blockMode'] == _ARTICLES_BLOCK_MANUAL ? " AND `block`='1'" : ''
-			),
-			($this->table['sortDesc'] ? '-' : '') . $this->table['sortMode'], '',
-			$this->settings['blockCount']);
-
-		if (count($items))
-		{
-			foreach ($items as $item)
-			{
-				$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatPreview']);
-				$result .= $this->replaceMacros($this->settings['tmplBlockItem'], $item);
-			}
-		}
-		return $result;
 	}
 	//-----------------------------------------------------------------------------
 
@@ -737,9 +698,9 @@ class TArticles extends TListContentPlugin
 	 *              $options['oldordering'] bool Сортировать элементы
 	 * @return string
 	 */
-	function clientRenderList($options = null)
+	public function clientRenderList($options = null)
 	{
-		global $Eresus, $page;
+		global $page;
 
 		$item = array(
 			'items' => parent::clientRenderList($options),
@@ -758,7 +719,7 @@ class TArticles extends TListContentPlugin
 	 * @param array $item  Свойства статьи
 	 * @return string
 	 */
-	function clientRenderListItem($item)
+	public function clientRenderListItem($item)
 	{
 		$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatPreview']);
 		$result = $this->replaceMacros($this->settings['tmplListItem'], $item);
@@ -771,21 +732,23 @@ class TArticles extends TListContentPlugin
 	 *
 	 * @return string
 	 */
-	function clientRenderItem()
+	public function clientRenderItem()
 	{
 		global $Eresus, $page;
 
-		if ($page->topic != (string)((int)($page->topic))) {
+		if ($page->topic != (string) ((int) ($page->topic)))
+		{
 			$page->httpError(404);
 		}
 
-		$item = $Eresus->db->selectItem($this->table['name'], "(`id`='".$page->topic."')AND(`active`='1')");
+		$item = $Eresus->db->selectItem($this->table['name'],
+			"(`id`='" . $page->topic . "') AND (`active`='1')");
 		if (is_null($item))
 		{
 			$item = $page->httpError(404);
 			$result = $item['content'];
 		}
-			else
+		else
 		{
 			$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatFullText']);
 			$result = $this->replaceMacros($this->settings['tmplItem'], $item);
@@ -806,10 +769,8 @@ class TArticles extends TListContentPlugin
 	 * @param string $text  HMTL страницы
 	 * @return string
 	 */
-	function clientOnPageRender($text)
+	public function clientOnPageRender($text)
 	{
-		global $page;
-
 		$articles = $this->renderArticlesBlock();
 		$text = str_replace('$(ArticlesBlock)', $articles, $text);
 		return $text;
@@ -839,6 +800,112 @@ class TArticles extends TListContentPlugin
 		DB::execute($q);
 
 		HTTP::redirect(str_replace('&amp;', '&', $page->url()));
+	}
+	//-----------------------------------------------------------------------------
+
+	/**
+	 * Создание краткого текста
+	 *
+	 * @param string $text
+	 * @return string
+	 */
+	private function createPreview($text)
+	{
+		$text = trim(preg_replace('/<.+>/Us',' ',$text));
+		$text = str_replace(array("\n", "\r"), ' ', $text);
+		$text = preg_replace('/\s{2,}/', ' ', $text);
+
+		if (!$this->settings['previewMaxSize'])
+		{
+			$this->settings['previewMaxSize'] = 500;
+		}
+
+		if ($this->settings['previewSmartSplit'])
+		{
+			preg_match("/\A(.{1,".$this->settings['previewMaxSize']."})(\.\s|\.|\Z)/s", $text, $result);
+			$result = $result[1].'...';
+		}
+		else
+		{
+			$result = substr($text, 0, $this->settings['previewMaxSize']);
+			if (strlen($text) > $this->settings['previewMaxSize'])
+			{
+				$result .= '...';
+			}
+		}
+		return $result;
+	}
+	//-----------------------------------------------------------------------------
+
+	/**
+	 * Изменение текста на странице
+	 */
+	private function text()
+	{
+		global $Eresus, $page;
+
+		$item = $Eresus->db->selectItem('pages', '`id`="' . arg('section', 'int') . '"');
+		$item['content'] = $Eresus->db->escape($Eresus->request['arg']['content']);
+		$item = array('id' => $item['id'], 'content' => $item['content']);
+		$Eresus->db->updateItem('pages', $item, '`id`="' . arg('section', 'int') . '"');
+
+		HTTP::redirect(str_replace('&amp;', '&', $page->url(array('action' => 'text'))));
+	}
+	//-----------------------------------------------------------------------------
+
+	/**
+	 * Диалог редактирования текста на странице
+	 *
+	 * @return string
+	 */
+	private function adminRenderText()
+	{
+		global $Eresus, $page;
+
+		$item = $Eresus->db->selectItem('pages', '`id`="' . arg('section', 'int') . '"');
+		$form = array(
+			'name' => 'contentEditor',
+			'caption' => 'Текст на странице',
+			'width' => '95%',
+			'fields' => array(
+				array('type' => 'hidden', 'name' => 'action', 'value' => 'textupdate'),
+				array('type' => 'html', 'name' => 'content', 'height' => '400px',
+					'value' => $item['content']),
+			),
+			'buttons'=> array('ok', 'reset'),
+		);
+
+		$result = $page->renderForm($form);
+		return $page->renderTabs($this->table['tabs']) . $result;
+	}
+	//-----------------------------------------------------------------------------
+
+	/**
+	 * Отрисовка блока статей
+	 *
+	 * @return string
+	 */
+	private function renderArticlesBlock()
+	{
+		global $Eresus;
+
+		$result = '';
+		$items = $Eresus->db->select($this->table['name'],
+			"`active`='1'" . (
+				$this->settings['blockMode'] == self::BLOCK_MANUAL ? " AND `block`='1'" : ''
+			),
+			($this->table['sortDesc'] ? '-' : '') . $this->table['sortMode'], '',
+			$this->settings['blockCount']);
+
+		if (count($items))
+		{
+			foreach ($items as $item)
+			{
+				$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatPreview']);
+				$result .= $this->replaceMacros($this->settings['tmplBlockItem'], $item);
+			}
+		}
+		return $result;
 	}
 	//-----------------------------------------------------------------------------
 }
