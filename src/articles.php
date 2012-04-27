@@ -1,33 +1,33 @@
 <?php
 /**
- * Статьи
+ * РЎС‚Р°С‚СЊРё
  *
- * Публикация статей
+ * РџСѓР±Р»РёРєР°С†РёСЏ СЃС‚Р°С‚РµР№
  *
  * @version 2.16
  *
  * @copyright 2005, ProCreat Systems, http://procreat.ru/
  * @copyright 2007, Eresus Group, http://eresus.ru/
- * @copyright 2010, ООО "Два слона", http://dvaslona.ru/
+ * @copyright 2010, РћРћРћ "Р”РІР° СЃР»РѕРЅР°", http://dvaslona.ru/
  * @license http://www.gnu.org/licenses/gpl.txt  GPL License 3
- * @author Михаил Красильников <mihalych@vsepofigu.ru>
- * @author БерсЪ <bersz@procreat.ru>
- * @author Андрей Афонинский
+ * @author РњРёС…Р°РёР» РљСЂР°СЃРёР»СЊРЅРёРєРѕРІ <mihalych@vsepofigu.ru>
+ * @author Р‘РµСЂСЃРЄ <bersz@procreat.ru>
+ * @author РђРЅРґСЂРµР№ РђС„РѕРЅРёРЅСЃРєРёР№
  *
- * Данная программа является свободным программным обеспечением. Вы
- * вправе распространять ее и/или модифицировать в соответствии с
- * условиями версии 3 либо по вашему выбору с условиями более поздней
- * версии Стандартной Общественной Лицензии GNU, опубликованной Free
+ * Р”Р°РЅРЅР°СЏ РїСЂРѕРіСЂР°РјРјР° СЏРІР»СЏРµС‚СЃСЏ СЃРІРѕР±РѕРґРЅС‹Рј РїСЂРѕРіСЂР°РјРјРЅС‹Рј РѕР±РµСЃРїРµС‡РµРЅРёРµРј. Р’С‹
+ * РІРїСЂР°РІРµ СЂР°СЃРїСЂРѕСЃС‚СЂР°РЅСЏС‚СЊ РµРµ Рё/РёР»Рё РјРѕРґРёС„РёС†РёСЂРѕРІР°С‚СЊ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ
+ * СѓСЃР»РѕРІРёСЏРјРё РІРµСЂСЃРёРё 3 Р»РёР±Рѕ РїРѕ РІР°С€РµРјСѓ РІС‹Р±РѕСЂСѓ СЃ СѓСЃР»РѕРІРёСЏРјРё Р±РѕР»РµРµ РїРѕР·РґРЅРµР№
+ * РІРµСЂСЃРёРё РЎС‚Р°РЅРґР°СЂС‚РЅРѕР№ РћР±С‰РµСЃС‚РІРµРЅРЅРѕР№ Р›РёС†РµРЅР·РёРё GNU, РѕРїСѓР±Р»РёРєРѕРІР°РЅРЅРѕР№ Free
  * Software Foundation.
  *
- * Мы распространяем эту программу в надежде на то, что она будет вам
- * полезной, однако НЕ ПРЕДОСТАВЛЯЕМ НА НЕЕ НИКАКИХ ГАРАНТИЙ, в том
- * числе ГАРАНТИИ ТОВАРНОГО СОСТОЯНИЯ ПРИ ПРОДАЖЕ и ПРИГОДНОСТИ ДЛЯ
- * ИСПОЛЬЗОВАНИЯ В КОНКРЕТНЫХ ЦЕЛЯХ. Для получения более подробной
- * информации ознакомьтесь со Стандартной Общественной Лицензией GNU.
+ * РњС‹ СЂР°СЃРїСЂРѕСЃС‚СЂР°РЅСЏРµРј СЌС‚Сѓ РїСЂРѕРіСЂР°РјРјСѓ РІ РЅР°РґРµР¶РґРµ РЅР° С‚Рѕ, С‡С‚Рѕ РѕРЅР° Р±СѓРґРµС‚ РІР°Рј
+ * РїРѕР»РµР·РЅРѕР№, РѕРґРЅР°РєРѕ РќР• РџР Р•Р”РћРЎРўРђР’Р›РЇР•Рњ РќРђ РќР•Р• РќРРљРђРљРРҐ Р“РђР РђРќРўРР™, РІ С‚РѕРј
+ * С‡РёСЃР»Рµ Р“РђР РђРќРўРР РўРћР’РђР РќРћР“Рћ РЎРћРЎРўРћРЇРќРРЇ РџР Р РџР РћР”РђР–Р• Рё РџР РР“РћР”РќРћРЎРўР Р”Р›РЇ
+ * РРЎРџРћР›Р¬Р—РћР’РђРќРРЇ Р’ РљРћРќРљР Р•РўРќР«РҐ Р¦Р•Р›РЇРҐ. Р”Р»СЏ РїРѕР»СѓС‡РµРЅРёСЏ Р±РѕР»РµРµ РїРѕРґСЂРѕР±РЅРѕР№
+ * РёРЅС„РѕСЂРјР°С†РёРё РѕР·РЅР°РєРѕРјСЊС‚РµСЃСЊ СЃРѕ РЎС‚Р°РЅРґР°СЂС‚РЅРѕР№ РћР±С‰РµСЃС‚РІРµРЅРЅРѕР№ Р›РёС†РµРЅР·РёРµР№ GNU.
  *
- * Вы должны были получить копию Стандартной Общественной Лицензии
- * GNU с этой программой. Если Вы ее не получили, смотрите документ на
+ * Р’С‹ РґРѕР»Р¶РЅС‹ Р±С‹Р»Рё РїРѕР»СѓС‡РёС‚СЊ РєРѕРїРёСЋ РЎС‚Р°РЅРґР°СЂС‚РЅРѕР№ РћР±С‰РµСЃС‚РІРµРЅРЅРѕР№ Р›РёС†РµРЅР·РёРё
+ * GNU СЃ СЌС‚РѕР№ РїСЂРѕРіСЂР°РјРјРѕР№. Р•СЃР»Рё Р’С‹ РµРµ РЅРµ РїРѕР»СѓС‡РёР»Рё, СЃРјРѕС‚СЂРёС‚Рµ РґРѕРєСѓРјРµРЅС‚ РЅР°
  * <http://www.gnu.org/licenses/>
  *
  * @package Articles
@@ -37,68 +37,68 @@
 
 
 /**
- * Класс плагина
+ * РљР»Р°СЃСЃ РїР»Р°РіРёРЅР°
  *
  * @package Articles
  */
 class TArticles extends TListContentPlugin
 {
 	/**
-	 * Режим блока: блок отключен
+	 * Р РµР¶РёРј Р±Р»РѕРєР°: Р±Р»РѕРє РѕС‚РєР»СЋС‡РµРЅ
 	 * @var int
 	 */
 	const BLOCK_NONE = 0;
 
 	/**
-	 * Режим блока: последние статьи
+	 * Р РµР¶РёРј Р±Р»РѕРєР°: РїРѕСЃР»РµРґРЅРёРµ СЃС‚Р°С‚СЊРё
 	 * @var int
 	 */
 	const BLOCK_LAST = 1;
 
 	/**
-	 * Режим блока: избранные статьи
+	 * Р РµР¶РёРј Р±Р»РѕРєР°: РёР·Р±СЂР°РЅРЅС‹Рµ СЃС‚Р°С‚СЊРё
 	 * @var int
 	 */
 	const BLOCK_MANUAL = 2;
 
 	/**
-	 * Имя плагина
+	 * РРјСЏ РїР»Р°РіРёРЅР°
 	 * @var string
 	 */
 	public $name = 'articles';
 
 	/**
-	 * Требуемая версия ядра
+	 * РўСЂРµР±СѓРµРјР°СЏ РІРµСЂСЃРёСЏ СЏРґСЂР°
 	 * @var string
 	 */
 	public $kernel = '2.14';
 
 	/**
-	 * Тип плагина
+	 * РўРёРї РїР»Р°РіРёРЅР°
 	 * @var string
 	 */
 	public $type = 'client,content,ondemand';
 
 	/**
-	 * Название плагина
+	 * РќР°Р·РІР°РЅРёРµ РїР»Р°РіРёРЅР°
 	 * @var string
 	 */
-	public $title = 'Статьи';
+	public $title = 'РЎС‚Р°С‚СЊРё';
 
 	/**
-	 * Версия плагина
+	 * Р’РµСЂСЃРёСЏ РїР»Р°РіРёРЅР°
 	 * @var string
 	 */
-	public $version = '2.16a';
+	public $version = '3.00a';
 
 	/**
-	 * Описание плагина
+	 * РћРїРёСЃР°РЅРёРµ РїР»Р°РіРёРЅР°
 	 * @var string
 	 */
-	public $description = 'Публикация статей';
+	public $description = 'РџСѓР±Р»РёРєР°С†РёСЏ СЃС‚Р°С‚РµР№';
 
 	/**
-	 * Настройки плагина
+	 * РќР°СЃС‚СЂРѕР№РєРё РїР»Р°РіРёРЅР°
 	 * @var array
 	 */
 	public $settings = array(
@@ -115,7 +115,7 @@ class TArticles extends TListContentPlugin
 				<img src="$(thumbnail)" alt="$(caption)" width="$(thumbnailWidth)" height="$(thumbnailHeight)" />
 				$(preview)
 				<div class="controls">
-					<a href="$(link)">Полный текст...</a>
+					<a href="$(link)">РџРѕР»РЅС‹Р№ С‚РµРєСЃС‚...</a>
 				</div>
 			</div>
 		',
@@ -134,7 +134,7 @@ class TArticles extends TListContentPlugin
 		'listSortDesc' => true,
 		'dateFormatPreview' => DATE_SHORT,
 		'dateFormatFullText' => DATE_LONG,
-		'blockMode' => 0, # 0 - отключить, 1 - последние, 2 - избранные
+		'blockMode' => 0, # 0 - РѕС‚РєР»СЋС‡РёС‚СЊ, 1 - РїРѕСЃР»РµРґРЅРёРµ, 2 - РёР·Р±СЂР°РЅРЅС‹Рµ
 		'blockCount' => 5,
 		'THimageWidth' => 120,
 		'THimageHeight' => 90,
@@ -144,7 +144,7 @@ class TArticles extends TListContentPlugin
 	);
 
 	/**
-	 * Таблица списка объектов
+	 * РўР°Р±Р»РёС†Р° СЃРїРёСЃРєР° РѕР±СЉРµРєС‚РѕРІ
 	 * @var array
 	 */
 	public $table = array (
@@ -153,9 +153,9 @@ class TArticles extends TListContentPlugin
 		'sortMode' => 'posted',
 		'sortDesc' => true,
 		'columns' => array(
-			array('name' => 'caption', 'caption' => 'Заголовок'),
+			array('name' => 'caption', 'caption' => 'Р—Р°РіРѕР»РѕРІРѕРє'),
 			array('name' => 'posted', 'align'=>'center', 'value'=>templPosted, 'macros' => true),
-			array('name' => 'preview', 'caption' => 'Кратко', 'maxlength'=>255, 'striptags' => true),
+			array('name' => 'preview', 'caption' => 'РљСЂР°С‚РєРѕ', 'maxlength'=>255, 'striptags' => true),
 		),
 		'controls' => array (
 			'delete' => '',
@@ -165,9 +165,9 @@ class TArticles extends TListContentPlugin
 		'tabs' => array(
 			'width'=>'180px',
 			'items'=>array(
-				'create' => array('caption'=>'Добавить статью', 'name'=>'action', 'value'=>'create'),
-				'list' => array('caption' => 'Список статей'),
-				'text' => array('caption' => 'Текст на странице', 'name'=>'action', 'value'=>'text'),
+				'create' => array('caption'=>'Р”РѕР±Р°РІРёС‚СЊ СЃС‚Р°С‚СЊСЋ', 'name'=>'action', 'value'=>'create'),
+				'list' => array('caption' => 'РЎРїРёСЃРѕРє СЃС‚Р°С‚РµР№'),
+				'text' => array('caption' => 'РўРµРєСЃС‚ РЅР° СЃС‚СЂР°РЅРёС†Рµ', 'name'=>'action', 'value'=>'text'),
 			),
 		),
 		'sql' => "(
@@ -191,9 +191,9 @@ class TArticles extends TListContentPlugin
 	);
 
 	/**
-	 * Конструктор
+	 * РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
 	 *
-	 * Производит регистрацию обработчиков событий
+	 * РџСЂРѕРёР·РІРѕРґРёС‚ СЂРµРіРёСЃС‚СЂР°С†РёСЋ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ СЃРѕР±С‹С‚РёР№
 	 */
 	public function __construct()
 	{
@@ -220,7 +220,7 @@ class TArticles extends TListContentPlugin
 			array_unshift($this->table['columns'], array('name' => 'block', 'align'=>'center',
 				'replace' => array(
 					0 => '',
-					1 => '<span title="Показыватется в блоке статей">*</span>'
+					1 => '<span title="РџРѕРєР°Р·С‹РІР°РµС‚СЃСЏ РІ Р±Р»РѕРєРµ СЃС‚Р°С‚РµР№">*</span>'
 				)
 			), $temp);
 		}
@@ -229,7 +229,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Процедура установки плагина
+	 * РџСЂРѕС†РµРґСѓСЂР° СѓСЃС‚Р°РЅРѕРІРєРё РїР»Р°РіРёРЅР°
 	 *
 	 * @return void
 	 */
@@ -248,7 +248,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Сохранение настроек
+	 * РЎРѕС…СЂР°РЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє
 	 */
 	function updateSettings()
 	{
@@ -277,7 +277,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Добавление статьи в БД
+	 * Р”РѕР±Р°РІР»РµРЅРёРµ СЃС‚Р°С‚СЊРё РІ Р‘Р”
 	 */
 	public function insert()
 	{
@@ -286,7 +286,7 @@ class TArticles extends TListContentPlugin
 		$item = array();
 		$item['section'] = arg('section', 'int');
 		$item['active'] = true;
-		// FIXME Не задаётся position. Наверно надо учесть режим сортировки
+		// FIXME РќРµ Р·Р°РґР°С‘С‚СЃСЏ position. РќР°РІРµСЂРЅРѕ РЅР°РґРѕ СѓС‡РµСЃС‚СЊ СЂРµР¶РёРј СЃРѕСЂС‚РёСЂРѕРІРєРё
 		$item['posted'] = gettime();
 		$item['block'] = arg('block', 'int');
 		$item['caption'] = arg('caption', 'dbsafe');
@@ -320,7 +320,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Изменение статьи в БД
+	 * РР·РјРµРЅРµРЅРёРµ СЃС‚Р°С‚СЊРё РІ Р‘Р”
 	 */
 	public function update()
 	{
@@ -333,7 +333,7 @@ class TArticles extends TListContentPlugin
 		{
 			$item['active'] = arg('active', 'int');
 		}
-		// FIXME Не задаётся position. Наверно надо учесть режим сортировки
+		// FIXME РќРµ Р·Р°РґР°С‘С‚СЃСЏ position. РќР°РІРµСЂРЅРѕ РЅР°РґРѕ СѓС‡РµСЃС‚СЊ СЂРµР¶РёРј СЃРѕСЂС‚РёСЂРѕРІРєРё
 		$item['posted'] = arg('posted', 'dbsafe');
 		$item['block'] = arg('block', 'int');
 		$item['caption'] = arg('caption', 'dbsafe');
@@ -371,9 +371,9 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Удаление статьи из БД
+	 * РЈРґР°Р»РµРЅРёРµ СЃС‚Р°С‚СЊРё РёР· Р‘Р”
 	 *
-	 * @param int $id  Идентификатор статьи
+	 * @param int $id  РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ СЃС‚Р°С‚СЊРё
 	 */
 	public function delete($id)
 	{
@@ -392,10 +392,10 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Замена макросов в строке
+	 * Р—Р°РјРµРЅР° РјР°РєСЂРѕСЃРѕРІ РІ СЃС‚СЂРѕРєРµ
 	 *
-	 * @param string $template  Шаблон
-	 * @param array  $item      Массив замен
+	 * @param string $template  РЁР°Р±Р»РѕРЅ
+	 * @param array  $item      РњР°СЃСЃРёРІ Р·Р°РјРµРЅ
 	 * @return string  HTML
 	 */
 	function replaceMacros($template, $item)
@@ -454,15 +454,16 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Определяет отображаемый раздел АИ
+	 * РћРїСЂРµРґРµР»СЏРµС‚ РѕС‚РѕР±СЂР°Р¶Р°РµРјС‹Р№ СЂР°Р·РґРµР» РђР
 	 *
 	 * @return string|null
 	 */
 	function adminRenderContent()
 	{
+		$result = null;
 		if (!is_null(arg('action')) && arg('action') == 'textupdate')
 		{
-			$result = $this->text();
+			$this->text();
 		}
 		elseif (!is_null(arg('action')) && arg('action') == 'text')
 		{
@@ -478,7 +479,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Диалог добавления статьи
+	 * Р”РёР°Р»РѕРі РґРѕР±Р°РІР»РµРЅРёСЏ СЃС‚Р°С‚СЊРё
 	 *
 	 * @return string
 	 */
@@ -488,19 +489,19 @@ class TArticles extends TListContentPlugin
 
 		$form = array(
 			'name' => 'newArticles',
-			'caption' => 'Добавить статью',
+			'caption' => 'Р”РѕР±Р°РІРёС‚СЊ СЃС‚Р°С‚СЊСЋ',
 			'width' => '95%',
 			'fields' => array (
 				array ('type'=>'hidden','name'=>'action', 'value'=>'insert'),
 				array ('type' => 'hidden', 'name' => 'section', 'value' => arg('section')),
-				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок', 'width' => '100%',
+				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Р—Р°РіРѕР»РѕРІРѕРє', 'width' => '100%',
 					'maxlength' => '255'),
-				array ('type' => 'html', 'name' => 'text', 'label' => 'Полный текст', 'height' => '200px'),
-				array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание',
+				array ('type' => 'html', 'name' => 'text', 'label' => 'РџРѕР»РЅС‹Р№ С‚РµРєСЃС‚', 'height' => '200px'),
+				array ('type' => 'memo', 'name' => 'preview', 'label' => 'РљСЂР°С‚РєРѕРµ РѕРїРёСЃР°РЅРёРµ',
 					'height' => '10'),
 				array ('type' => ($this->settings['blockMode'] == self::BLOCK_MANUAL)?'checkbox':'hidden',
-					'name' => 'block', 'label' => 'Показывать в блоке'),
-				array ('type' => 'file', 'name' => 'image', 'label' => 'Картинка', 'width' => '100'),
+					'name' => 'block', 'label' => 'РџРѕРєР°Р·С‹РІР°С‚СЊ РІ Р±Р»РѕРєРµ'),
+				array ('type' => 'file', 'name' => 'image', 'label' => 'РљР°СЂС‚РёРЅРєР°', 'width' => '100'),
 			),
 			'buttons' => array('ok', 'cancel'),
 		);
@@ -511,7 +512,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Диалог изменения статьи
+	 * Р”РёР°Р»РѕРі РёР·РјРµРЅРµРЅРёСЏ СЃС‚Р°С‚СЊРё
 	 *
 	 * @return string
 	 */
@@ -523,7 +524,7 @@ class TArticles extends TListContentPlugin
 
 		if (file_exists($Eresus->fdata . $this->name.'/'.$item['image'].'-thmb.jpg'))
 		{
-			$image = 'Изображение: <br /><img src="'. $Eresus->data . $this->name.'/'.$item['image'].
+			$image = 'РР·РѕР±СЂР°Р¶РµРЅРёРµ: <br /><img src="'. $Eresus->data . $this->name.'/'.$item['image'].
 				'-thmb.jpg" alt="" />';
 		}
 		else
@@ -547,26 +548,26 @@ class TArticles extends TListContentPlugin
 
 		$form = array(
 			'name' => 'editArticles',
-			'caption' => 'Изменить статью',
+			'caption' => 'РР·РјРµРЅРёС‚СЊ СЃС‚Р°С‚СЊСЋ',
 			'width' => '95%',
 			'fields' => array (
 				array('type'=>'hidden','name'=>'update', 'value'=>$item['id']),
-				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок', 'width' => '100%',
+				array ('type' => 'edit', 'name' => 'caption', 'label' => 'Р—Р°РіРѕР»РѕРІРѕРє', 'width' => '100%',
 					'maxlength' => '255'),
-				array ('type' => 'html', 'name' => 'text', 'label' => 'Полный текст', 'height' => '200px'),
-				array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание',
+				array ('type' => 'html', 'name' => 'text', 'label' => 'РџРѕР»РЅС‹Р№ С‚РµРєСЃС‚', 'height' => '200px'),
+				array ('type' => 'memo', 'name' => 'preview', 'label' => 'РљСЂР°С‚РєРѕРµ РѕРїРёСЃР°РЅРёРµ',
 					'height' => '5'),
 				array ('type' => 'checkbox', 'name'=>'updatePreview',
-					'label'=>'Обновить краткое описание автоматически', 'value' => false),
+					'label'=>'РћР±РЅРѕРІРёС‚СЊ РєСЂР°С‚РєРѕРµ РѕРїРёСЃР°РЅРёРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё', 'value' => false),
 				array ('type' => ($this->settings['blockMode'] == self::BLOCK_MANUAL)?'checkbox':'hidden',
-					'name' => 'block', 'label' => 'Показывать в блоке'),
-				array ('type' => 'file', 'name' => 'image', 'label' => 'Картинка', 'width' => '100',
+					'name' => 'block', 'label' => 'РџРѕРєР°Р·С‹РІР°С‚СЊ РІ Р±Р»РѕРєРµ'),
+				array ('type' => 'file', 'name' => 'image', 'label' => 'РљР°СЂС‚РёРЅРєР°', 'width' => '100',
 					'comment'=>(is_file($Eresus->fdata.$this->name.'/'.$item['image'].'.jpg') ?
-						'<a href="'.$page->url(array('action'=>'delimage')).'">Удалить</a>' : '')),
+						'<a href="'.$page->url(array('action'=>'delimage')).'">РЈРґР°Р»РёС‚СЊ</a>' : '')),
 				array ('type' => 'divider'),
-				array ('type' => 'edit', 'name' => 'section', 'label' => 'Раздел', 'access'=>ADMIN),
-				array ('type' => 'edit', 'name'=>'posted', 'label'=>'Написано'),
-				array ('type' => 'checkbox', 'name'=>'active', 'label'=>'Активно'),
+				array ('type' => 'edit', 'name' => 'section', 'label' => 'Р Р°Р·РґРµР»', 'access'=>ADMIN),
+				array ('type' => 'edit', 'name'=>'posted', 'label'=>'РќР°РїРёСЃР°РЅРѕ'),
+				array ('type' => 'checkbox', 'name'=>'active', 'label'=>'РђРєС‚РёРІРЅРѕ'),
 				array ('type' => 'text', 'value' => $image),
 			),
 			'buttons' => array('ok', 'apply', 'cancel'),
@@ -578,7 +579,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Диалог настроек
+	 * Р”РёР°Р»РѕРі РЅР°СЃС‚СЂРѕРµРє
 	 * @return string
 	 */
 	public function settings()
@@ -592,64 +593,64 @@ class TArticles extends TListContentPlugin
 			'fields' => array (
 				array('type'=>'hidden','name'=>'update', 'value'=>$this->name),
 				array('type'=>'text','value'=>
-					'Для вставки блока статей используйте макрос <b>$(ArticlesBlock)</b><br />'),
-				array('type'=>'header','value'=>'Параметры полнотекстового просмотра'),
-				array('type'=>'memo','name'=>'tmplItem','label'=>'Шаблон полнотекстового просмотра',
+				'Р”Р»СЏ РІСЃС‚Р°РІРєРё Р±Р»РѕРєР° СЃС‚Р°С‚РµР№ РёСЃРїРѕР»СЊР·СѓР№С‚Рµ РјР°РєСЂРѕСЃ <b>$(ArticlesBlock)</b><br />'),
+				array('type'=>'header','value'=>'РџР°СЂР°РјРµС‚СЂС‹ РїРѕР»РЅРѕС‚РµРєСЃС‚РѕРІРѕРіРѕ РїСЂРѕСЃРјРѕС‚СЂР°'),
+				array('type'=>'memo','name'=>'tmplItem','label'=>'РЁР°Р±Р»РѕРЅ РїРѕР»РЅРѕС‚РµРєСЃС‚РѕРІРѕРіРѕ РїСЂРѕСЃРјРѕС‚СЂР°',
 					'height'=>'5'),
-				array('type'=>'edit','name'=>'dateFormatFullText','label'=>'Формат даты', 'width'=>'100px'),
-				array('type'=>'header', 'value' => 'Параметры списка'),
-				array('type'=>'edit','name'=>'itemsPerPage','label'=>'Статей на страницу','width'=>'50px',
+				array('type'=>'edit','name'=>'dateFormatFullText','label'=>'Р¤РѕСЂРјР°С‚ РґР°С‚С‹', 'width'=>'100px'),
+				array('type'=>'header', 'value' => 'РџР°СЂР°РјРµС‚СЂС‹ СЃРїРёСЃРєР°'),
+				array('type'=>'edit','name'=>'itemsPerPage','label'=>'РЎС‚Р°С‚РµР№ РЅР° СЃС‚СЂР°РЅРёС†Сѓ','width'=>'50px',
 					'maxlength'=>'2'),
-				array('type'=>'memo','name'=>'tmplList','label'=>'Шаблон списка','height'=>'3'),
+				array('type'=>'memo','name'=>'tmplList','label'=>'РЁР°Р±Р»РѕРЅ СЃРїРёСЃРєР°','height'=>'3'),
 				array('type'=>'text','value'=>'
-					Макросы:<br />
-					<strong>$(title)</strong> - заголовок страницы,<br />
-					<strong>$(content)</strong> - контент страницы,<br />
-					<strong>$(items)</strong> - список статей
+					РњР°РєСЂРѕСЃС‹:<br />
+					<strong>$(title)</strong> - Р·Р°РіРѕР»РѕРІРѕРє СЃС‚СЂР°РЅРёС†С‹,<br />
+					<strong>$(content)</strong> - РєРѕРЅС‚РµРЅС‚ СЃС‚СЂР°РЅРёС†С‹,<br />
+					<strong>$(items)</strong> - СЃРїРёСЃРѕРє СЃС‚Р°С‚РµР№
 				'),
-				array('type'=>'memo','name'=>'tmplListItem','label'=>'Шаблон элемента списка',
+				array('type'=>'memo','name'=>'tmplListItem','label'=>'РЁР°Р±Р»РѕРЅ СЌР»РµРјРµРЅС‚Р° СЃРїРёСЃРєР°',
 					'height'=>'5'),
-				array('type'=>'edit','name'=>'dateFormatPreview','label'=>'Формат даты', 'width'=>'100px'),
-				array('type'=>'select','name'=>'listSortMode','label'=>'Сортировка',
+				array('type'=>'edit','name'=>'dateFormatPreview','label'=>'Р¤РѕСЂРјР°С‚ РґР°С‚С‹', 'width'=>'100px'),
+				array('type'=>'select','name'=>'listSortMode','label'=>'РЎРѕСЂС‚РёСЂРѕРІРєР°',
 					'values' => array('posted', 'position'),
-					'items' => array('По дате добавления', 'Ручная')),
-				array('type'=>'checkbox','name'=>'listSortDesc','label'=>'В обратном порядке'),
-				array('type'=>'header', 'value' => 'Блок статей'),
-				array('type'=>'select','name'=>'blockMode','label'=>'Режим блока статей',
+					'items' => array('РџРѕ РґР°С‚Рµ РґРѕР±Р°РІР»РµРЅРёСЏ', 'Р СѓС‡РЅР°СЏ')),
+				array('type'=>'checkbox','name'=>'listSortDesc','label'=>'Р’ РѕР±СЂР°С‚РЅРѕРј РїРѕСЂСЏРґРєРµ'),
+				array('type'=>'header', 'value' => 'Р‘Р»РѕРє СЃС‚Р°С‚РµР№'),
+				array('type'=>'select','name'=>'blockMode','label'=>'Р РµР¶РёРј Р±Р»РѕРєР° СЃС‚Р°С‚РµР№',
 					'values' => array(self::BLOCK_NONE, self::BLOCK_LAST, self::BLOCK_MANUAL),
-					'items' => array('Отключить','Последние статьи','Избранные статьи')),
-				array('type'=>'memo','name'=>'tmplBlockItem','label'=>'Шаблон элемента блока',
+					'items' => array('РћС‚РєР»СЋС‡РёС‚СЊ','РџРѕСЃР»РµРґРЅРёРµ СЃС‚Р°С‚СЊРё','РР·Р±СЂР°РЅРЅС‹Рµ СЃС‚Р°С‚СЊРё')),
+				array('type'=>'memo','name'=>'tmplBlockItem','label'=>'РЁР°Р±Р»РѕРЅ СЌР»РµРјРµРЅС‚Р° Р±Р»РѕРєР°',
 					'height'=>'3'),
-				array('type'=>'edit','name'=>'blockCount','label'=>'Количество', 'width'=>'50px'),
-				array('type'=>'header', 'value' => 'Краткое описание'),
-				array('type'=>'edit','name'=>'previewMaxSize','label'=>'Макс. размер описания',
-					'width'=>'50px', 'maxlength'=>'4', 'comment'=>'символов'),
-				array('type'=>'checkbox','name'=>'previewSmartSplit','label'=>'"Умное" создание описания'),
-				array('type'=>'header', 'value' => 'Картинка'),
-				array('type'=>'edit','name'=>'imageWidth','label'=>'Ширина', 'width'=>'100px'),
-				array('type'=>'edit','name'=>'imageHeight','label'=>'Высота', 'width'=>'100px'),
-				array('type'=>'edit','name'=>'THimageWidth','label'=>'Ширина Миниатюры', 'width'=>'100px'),
-				array('type'=>'edit','name'=>'THimageHeight','label'=>'Высота Миниатюры', 'width'=>'100px'),
-				array('type'=>'edit','name'=>'imageColor','label'=>'Цвета фона', 'width'=>'100px',
+				array('type'=>'edit','name'=>'blockCount','label'=>'РљРѕР»РёС‡РµСЃС‚РІРѕ', 'width'=>'50px'),
+				array('type'=>'header', 'value' => 'РљСЂР°С‚РєРѕРµ РѕРїРёСЃР°РЅРёРµ'),
+				array('type'=>'edit','name'=>'previewMaxSize','label'=>'РњР°РєСЃ. СЂР°Р·РјРµСЂ РѕРїРёСЃР°РЅРёСЏ',
+					'width'=>'50px', 'maxlength'=>'4', 'comment'=>'СЃРёРјРІРѕР»РѕРІ'),
+				array('type'=>'checkbox','name'=>'previewSmartSplit','label'=>'"РЈРјРЅРѕРµ" СЃРѕР·РґР°РЅРёРµ РѕРїРёСЃР°РЅРёСЏ'),
+				array('type'=>'header', 'value' => 'РљР°СЂС‚РёРЅРєР°'),
+				array('type'=>'edit','name'=>'imageWidth','label'=>'РЁРёСЂРёРЅР°', 'width'=>'100px'),
+				array('type'=>'edit','name'=>'imageHeight','label'=>'Р’С‹СЃРѕС‚Р°', 'width'=>'100px'),
+				array('type'=>'edit','name'=>'THimageWidth','label'=>'РЁРёСЂРёРЅР° РњРёРЅРёР°С‚СЋСЂС‹', 'width'=>'100px'),
+				array('type'=>'edit','name'=>'THimageHeight','label'=>'Р’С‹СЃРѕС‚Р° РњРёРЅРёР°С‚СЋСЂС‹', 'width'=>'100px'),
+				array('type'=>'edit','name'=>'imageColor','label'=>'Р¦РІРµС‚Р° С„РѕРЅР°', 'width'=>'100px',
 					'comment' => '#RRGGBB'),
 				array('type'=>'divider'),
 				array('type'=>'text', 'value'=>
-					"Для создания шаблонов полнотекстового просмотра, элемента списка и элемента блока " .
-					"можно использовать макросы:<br />\n".
-					"<b>$(caption)</b> - заголовок<br />\n".
-					"<b>$(preview)</b> - краткий текст<br />\n".
-					"<b>$(text)</b> - полный текст<br />\n".
-					"<b>$(posted)</b> - дата публикации<br />\n".
-					"<b>$(link)</b> - адрес статьи (URL)<br />\n".
-					"<b>$(section)</b> - адрес списка статей (URL)<br />\n".
-					"<b>$(image)</b> - адрес картинки (URL)<br />\n".
-					"<b>$(thumbnail)</b> - адрес миниаютюры (URL)<br />\n".
-					"<b>$(imageWidth)</b> - ширина картинки<br />\n".
-					"<b>$(imageHeight)</b> - высота картинки<br />\n".
-					"<b>$(thumbnailWidth)</b> - ширина миниатюры<br />\n".
-					"<b>$(thumbnailHeight)</b> - высота миниатюры<br />\n"
+				"Р”Р»СЏ СЃРѕР·РґР°РЅРёСЏ С€Р°Р±Р»РѕРЅРѕРІ РїРѕР»РЅРѕС‚РµРєСЃС‚РѕРІРѕРіРѕ РїСЂРѕСЃРјРѕС‚СЂР°, СЌР»РµРјРµРЅС‚Р° СЃРїРёСЃРєР° Рё СЌР»РµРјРµРЅС‚Р° Р±Р»РѕРєР° " .
+					"РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РјР°РєСЂРѕСЃС‹:<br />\n".
+					"<b>$(caption)</b> - Р·Р°РіРѕР»РѕРІРѕРє<br />\n".
+					"<b>$(preview)</b> - РєСЂР°С‚РєРёР№ С‚РµРєСЃС‚<br />\n".
+					"<b>$(text)</b> - РїРѕР»РЅС‹Р№ С‚РµРєСЃС‚<br />\n".
+					"<b>$(posted)</b> - РґР°С‚Р° РїСѓР±Р»РёРєР°С†РёРё<br />\n".
+					"<b>$(link)</b> - Р°РґСЂРµСЃ СЃС‚Р°С‚СЊРё (URL)<br />\n".
+					"<b>$(section)</b> - Р°РґСЂРµСЃ СЃРїРёСЃРєР° СЃС‚Р°С‚РµР№ (URL)<br />\n".
+					"<b>$(image)</b> - Р°РґСЂРµСЃ РєР°СЂС‚РёРЅРєРё (URL)<br />\n".
+					"<b>$(thumbnail)</b> - Р°РґСЂРµСЃ РјРёРЅРёР°С‚СЋСЂС‹ (URL)<br />\n".
+					"<b>$(imageWidth)</b> - С€РёСЂРёРЅР° РєР°СЂС‚РёРЅРєРё<br />\n".
+					"<b>$(imageHeight)</b> - РІС‹СЃРѕС‚Р° РєР°СЂС‚РёРЅРєРё<br />\n".
+					"<b>$(thumbnailWidth)</b> - С€РёСЂРёРЅР° РјРёРЅРёР°С‚СЋСЂС‹<br />\n".
+					"<b>$(thumbnailHeight)</b> - РІС‹СЃРѕС‚Р° РјРёРЅРёР°С‚СЋСЂС‹<br />\n"
 				),
-		),
+			),
 			'buttons' => array('ok', 'apply', 'cancel'),
 		);
 		$result = $page->renderForm($form, $this->settings);
@@ -658,7 +659,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Формирование контента
+	 * Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ РєРѕРЅС‚РµРЅС‚Р°
 	 *
 	 * @return string
 	 */
@@ -691,11 +692,11 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Отрисовка списка статей
+	 * РћС‚СЂРёСЃРѕРІРєР° СЃРїРёСЃРєР° СЃС‚Р°С‚РµР№
 	 *
-	 * @param array $options  Свойства списка статей
-	 *              $options['pages'] bool Отображать переключатель страниц
-	 *              $options['oldordering'] bool Сортировать элементы
+	 * @param array $options  РЎРІРѕР№СЃС‚РІР° СЃРїРёСЃРєР° СЃС‚Р°С‚РµР№
+	 *              $options['pages'] bool РћС‚РѕР±СЂР°Р¶Р°С‚СЊ РїРµСЂРµРєР»СЋС‡Р°С‚РµР»СЊ СЃС‚СЂР°РЅРёС†
+	 *              $options['oldordering'] bool РЎРѕСЂС‚РёСЂРѕРІР°С‚СЊ СЌР»РµРјРµРЅС‚С‹
 	 * @return string
 	 */
 	public function clientRenderList($options = null)
@@ -714,9 +715,9 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Отрисовка статьи в списк
+	 * РћС‚СЂРёСЃРѕРІРєР° СЃС‚Р°С‚СЊРё РІ СЃРїРёСЃРєРµ
 	 *
-	 * @param array $item  Свойства статьи
+	 * @param array $item  РЎРІРѕР№СЃС‚РІР° СЃС‚Р°С‚СЊРё
 	 * @return string
 	 */
 	public function clientRenderListItem($item)
@@ -728,7 +729,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Отрисовка статьи
+	 * РћС‚СЂРёСЃРѕРІРєР° СЃС‚Р°С‚СЊРё
 	 *
 	 * @return string
 	 */
@@ -764,9 +765,9 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Обработчик события clientOnPageRender
+	 * РћР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёСЏ clientOnPageRender
 	 *
-	 * @param string $text  HMTL страницы
+	 * @param string $text  HTML СЃС‚СЂР°РЅРёС†С‹
 	 * @return string
 	 */
 	public function clientOnPageRender($text)
@@ -778,9 +779,9 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Обрабатывает запрос на переключение активности статьи
+	 * РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ Р·Р°РїСЂРѕСЃ РЅР° РїРµСЂРµРєР»СЋС‡РµРЅРёРµ Р°РєС‚РёРІРЅРѕСЃС‚Рё СЃС‚Р°С‚СЊРё
 	 *
-	 * @param int $id  ID статьи
+	 * @param int $id  ID СЃС‚Р°С‚СЊРё
 	 *
 	 * @return void
 	 *
@@ -804,7 +805,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Создание краткого текста
+	 * РЎРѕР·РґР°РЅРёРµ РєСЂР°С‚РєРѕРіРѕ С‚РµРєСЃС‚Р°
 	 *
 	 * @param string $text
 	 * @return string
@@ -813,7 +814,7 @@ class TArticles extends TListContentPlugin
 	{
 		$text = trim(preg_replace('/<.+>/Us',' ',$text));
 		$text = str_replace(array("\n", "\r"), ' ', $text);
-		$text = preg_replace('/\s{2,}/', ' ', $text);
+		$text = preg_replace('/\s{2,}/U', ' ', $text);
 
 		if (!$this->settings['previewMaxSize'])
 		{
@@ -822,13 +823,13 @@ class TArticles extends TListContentPlugin
 
 		if ($this->settings['previewSmartSplit'])
 		{
-			preg_match("/\A(.{1,".$this->settings['previewMaxSize']."})(\.\s|\.|\Z)/s", $text, $result);
+			preg_match("/\A(.{1,".$this->settings['previewMaxSize']."})(\.\s|\.|\Z)/Us", $text, $result);
 			$result = $result[1].'...';
 		}
 		else
 		{
-			$result = substr($text, 0, $this->settings['previewMaxSize']);
-			if (strlen($text) > $this->settings['previewMaxSize'])
+			$result = mb_substr($text, 0, $this->settings['previewMaxSize']);
+			if (mb_strlen($text) > $this->settings['previewMaxSize'])
 			{
 				$result .= '...';
 			}
@@ -838,7 +839,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Изменение текста на странице
+	 * РР·РјРµРЅРµРЅРёРµ С‚РµРєСЃС‚Р° РЅР° СЃС‚СЂР°РЅРёС†Рµ
 	 */
 	private function text()
 	{
@@ -854,7 +855,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Диалог редактирования текста на странице
+	 * Р”РёР°Р»РѕРі СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ С‚РµРєСЃС‚Р° РЅР° СЃС‚СЂР°РЅРёС†Рµ
 	 *
 	 * @return string
 	 */
@@ -865,7 +866,7 @@ class TArticles extends TListContentPlugin
 		$item = $Eresus->db->selectItem('pages', '`id`="' . arg('section', 'int') . '"');
 		$form = array(
 			'name' => 'contentEditor',
-			'caption' => 'Текст на странице',
+			'caption' => 'РўРµРєСЃС‚ РЅР° СЃС‚СЂР°РЅРёС†Рµ',
 			'width' => '95%',
 			'fields' => array(
 				array('type' => 'hidden', 'name' => 'action', 'value' => 'textupdate'),
@@ -881,7 +882,7 @@ class TArticles extends TListContentPlugin
 	//-----------------------------------------------------------------------------
 
 	/**
-	 * Отрисовка блока статей
+	 * РћС‚СЂРёСЃРѕРІРєР° Р±Р»РѕРєР° СЃС‚Р°С‚РµР№
 	 *
 	 * @return string
 	 */
@@ -892,7 +893,7 @@ class TArticles extends TListContentPlugin
 		$result = '';
 		$items = $Eresus->db->select($this->table['name'],
 			"`active`='1'" . (
-				$this->settings['blockMode'] == self::BLOCK_MANUAL ? " AND `block`='1'" : ''
+			$this->settings['blockMode'] == self::BLOCK_MANUAL ? " AND `block`='1'" : ''
 			),
 			($this->table['sortDesc'] ? '-' : '') . $this->table['sortMode'], '',
 			$this->settings['blockCount']);
