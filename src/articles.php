@@ -187,7 +187,7 @@ class TArticles extends TListContentPlugin
 			KEY `position` (`position`),
 			KEY `posted` (`posted`),
 			KEY `block` (`block`)
-		) TYPE=MyISAM COMMENT='Articles';",
+		) ENGINE=MyISAM COMMENT='Articles';",
 	);
 
 	/**
@@ -400,8 +400,6 @@ class TArticles extends TListContentPlugin
 	 */
 	function replaceMacros($template, $item)
 	{
-		global $page;
-
 		if (file_exists($GLOBALS['Eresus']->fdata . 'articles/'.$item['image'].'.jpg'))
 		{
 			$image = $GLOBALS['Eresus']->data . 'articles/'.$item['image'].'.jpg';
@@ -438,8 +436,8 @@ class TArticles extends TListContentPlugin
 				StripSlashes($item['preview']),
 				StripSlashes($item['text']),
 				$item['posted'],
-				$page->clientURL($item['section']).$item['id'].'/',
-				$page->clientURL($item['section']),
+				Eresus_Kernel::app()->getPage()->clientURL($item['section']).$item['id'].'/',
+				Eresus_Kernel::app()->getPage()->clientURL($item['section']),
 				$image,
 				$thumbnail,
 				$width,
@@ -456,7 +454,7 @@ class TArticles extends TListContentPlugin
 	/**
 	 * Определяет отображаемый раздел АИ
 	 *
-	 * @return string|null
+	 * @return mixed|string
 	 */
 	function adminRenderContent()
 	{
@@ -485,8 +483,6 @@ class TArticles extends TListContentPlugin
 	 */
 	public function adminAddItem()
 	{
-		global $page;
-
 		$form = array(
 			'name' => 'newArticles',
 			'caption' => 'Добавить статью',
@@ -506,7 +502,7 @@ class TArticles extends TListContentPlugin
 			'buttons' => array('ok', 'cancel'),
 		);
 
-		$result = $page->renderForm($form);
+		$result = Eresus_Kernel::app()->getPage()->renderForm($form);
 		return $result;
 	}
 	//-----------------------------------------------------------------------------
@@ -518,7 +514,8 @@ class TArticles extends TListContentPlugin
 	 */
 	public function adminEditItem()
 	{
-		global $Eresus, $page;
+		$Eresus = Eresus_CMS::getLegacyKernel();
+		$page = Eresus_Kernel::app()->getPage();
 
 		$item = $Eresus->db->selectItem($this->table['name'], "`id`='".arg('id', 'int')."'");
 
@@ -584,7 +581,7 @@ class TArticles extends TListContentPlugin
 	 */
 	public function settings()
 	{
-		global $page;
+		$page = Eresus_Kernel::app()->getPage();
 
 		$form = array(
 			'name' => 'settings',
@@ -661,11 +658,12 @@ class TArticles extends TListContentPlugin
 	/**
 	 * Формирование контента
 	 *
-	 * @return string
+	 * @return string|mixed
 	 */
 	public function clientRenderContent()
 	{
-		global $Eresus, $page;
+		$Eresus = Eresus_CMS::getLegacyKernel();
+		$page = Eresus_Kernel::app()->getPage();
 
 		if ($page->topic)
 		{
@@ -701,7 +699,7 @@ class TArticles extends TListContentPlugin
 	 */
 	public function clientRenderList($options = null)
 	{
-		global $page;
+		$page = Eresus_Kernel::app()->getPage();
 
 		$item = array(
 			'items' => parent::clientRenderList($options),
@@ -722,7 +720,7 @@ class TArticles extends TListContentPlugin
 	 */
 	public function clientRenderListItem($item)
 	{
-		$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatPreview']);
+		$item['posted'] = $this->formatDate($item['posted'], $this->settings['dateFormatPreview']);
 		$result = $this->replaceMacros($this->settings['tmplListItem'], $item);
 		return $result;
 	}
@@ -731,11 +729,12 @@ class TArticles extends TListContentPlugin
 	/**
 	 * Отрисовка статьи
 	 *
-	 * @return string
+	 * @return string|mixed
 	 */
 	public function clientRenderItem()
 	{
-		global $Eresus, $page;
+		$Eresus = Eresus_CMS::getLegacyKernel();
+		$page = Eresus_Kernel::app()->getPage();
 
 		if ($page->topic != (string) ((int) ($page->topic)))
 		{
@@ -751,7 +750,7 @@ class TArticles extends TListContentPlugin
 		}
 		else
 		{
-			$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatFullText']);
+			$item['posted'] = $this->formatDate($item['posted'], $this->settings['dateFormatFullText']);
 			$result = $this->replaceMacros($this->settings['tmplItem'], $item);
 		}
 		$page->section[] = $item['caption'];
@@ -791,7 +790,7 @@ class TArticles extends TListContentPlugin
 	 */
 	public function toggle($id)
 	{
-		global $page;
+		$page = Eresus_Kernel::app()->getPage();
 
 		$q = DB::getHandler()->createUpdateQuery();
 		$e = $q->expr;
@@ -843,7 +842,8 @@ class TArticles extends TListContentPlugin
 	 */
 	private function text()
 	{
-		global $Eresus, $page;
+		$Eresus = Eresus_CMS::getLegacyKernel();
+		$page = Eresus_Kernel::app()->getPage();
 
 		$item = $Eresus->db->selectItem('pages', '`id`="' . arg('section', 'int') . '"');
 		$item['content'] = $Eresus->db->escape($Eresus->request['arg']['content']);
@@ -861,7 +861,8 @@ class TArticles extends TListContentPlugin
 	 */
 	private function adminRenderText()
 	{
-		global $Eresus, $page;
+		$Eresus = Eresus_CMS::getLegacyKernel();
+		$page = Eresus_Kernel::app()->getPage();
 
 		$item = $Eresus->db->selectItem('pages', '`id`="' . arg('section', 'int') . '"');
 		$form = array(
@@ -888,7 +889,7 @@ class TArticles extends TListContentPlugin
 	 */
 	private function renderArticlesBlock()
 	{
-		global $Eresus;
+		$Eresus = Eresus_CMS::getLegacyKernel();
 
 		$result = '';
 		$items = $Eresus->db->select($this->table['name'],
@@ -902,11 +903,52 @@ class TArticles extends TListContentPlugin
 		{
 			foreach ($items as $item)
 			{
-				$item['posted'] = FormatDate($item['posted'], $this->settings['dateFormatPreview']);
+				$item['posted'] = $this->formatDate($item['posted'], $this->settings['dateFormatPreview']);
 				$result .= $this->replaceMacros($this->settings['tmplBlockItem'], $item);
 			}
 		}
 		return $result;
 	}
 	//-----------------------------------------------------------------------------
+
+	/**
+	 * Форматирование даты
+	 *
+	 * @param string $date    Дата в формате YYYY-MM-DD hh:mm:ss
+	 * @param string $format  Правила форматирования даты
+	 *
+	 * @return string  отформатированная дата
+	 */
+	private function formatDate($date, $format = DATETIME_NORMAL)
+	{
+		if (empty($date))
+		{
+			$result = DATETIME_UNKNOWN;
+		}
+		else
+		{
+			preg_match_all('/(?<!\\\)[hHisdDmMyY]/', $format, $m, PREG_OFFSET_CAPTURE);
+			$replace = array(
+				'Y' => substr($date, 0, 4),
+				'm' => substr($date, 5, 2),
+				'd' => substr($date, 8, 2),
+				'h' => substr($date, 11, 2),
+				'i' => substr($date, 14, 2),
+				's' => substr($date, 17, 2)
+			);
+			$replace['y'] = substr($replace['Y'], 2, 2);
+			$replace['M'] = constant('MONTH_'.$replace['m']);
+			$replace['D'] = $replace['d']{0} == '0' ? $replace['d']{1} : $replace['d'];
+			$replace['H'] = $replace['h']{0} == '0' ? $replace['h']{1} : $replace['h'];
+
+			$delta = 0;
+			for ($i = 0; $i<count($m[0]); $i++)
+			{
+				$format = substr_replace($format, $replace[$m[0][$i][0]], $m[0][$i][1]+$delta, 1);
+				$delta += strlen($replace[$m[0][$i][0]]) - 1;
+			}
+			$result = $format;
+		}
+		return $result;
+	}
 }
