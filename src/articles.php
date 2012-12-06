@@ -874,7 +874,7 @@ class TArticles extends TListContentPlugin
 				array('type' => 'html', 'name' => 'content', 'height' => '400px',
 					'value' => $item['content']),
 			),
-			'buttons'=> array('ok', 'reset'),
+			'buttons'=> array('ok' => 'Сохранить'),
 		);
 
 		$result = $page->renderForm($form);
