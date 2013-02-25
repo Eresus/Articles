@@ -71,7 +71,7 @@ class TArticles extends TListContentPlugin
 	 * Требуемая версия ядра
 	 * @var string
 	 */
-	public $kernel = '3.00';
+	public $kernel = '3.00b';
 
 	/**
 	 * Тип плагина
@@ -89,7 +89,7 @@ class TArticles extends TListContentPlugin
 	 * Версия плагина
 	 * @var string
 	 */
-	public $version = '3.00a';
+	public $version = '3.00';
 
 	/**
 	 * Описание плагина
