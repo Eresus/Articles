@@ -758,7 +758,13 @@ class TArticles extends TListContentPlugin
 		$item['name'] = $item['id'];
 		$item['title'] = $item['caption'];
 		$item['hint'] = $item['description'] = $item['keywords'] = '';
-		$Eresus->plugins->clientOnURLSplit($item, arg('url'));
+
+        $address = explode("/", $Eresus->request['path']);
+        $address = array_slice($address, 3);
+        $url = implode("/", $address);
+        $url .=$item['name']."/";
+
+		$Eresus->plugins->clientOnURLSplit($item, $url);
 		return $result;
 	}
 	//-----------------------------------------------------------------------------
