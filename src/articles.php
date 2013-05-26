@@ -248,7 +248,7 @@ class TArticles extends TListContentPlugin
     /**
      * Сохранение настроек
      */
-    function updateSettings()
+    public function updateSettings()
     {
         global $Eresus;
 
@@ -290,7 +290,10 @@ class TArticles extends TListContentPlugin
         $item['caption'] = arg('caption', 'dbsafe');
         $item['text'] = arg('text', 'dbsafe');
         $item['preview'] = arg('preview', 'dbsafe');
-        if (empty($item['preview'])) $item['preview'] = $this->createPreview($item['text']);
+        if (empty($item['preview']))
+        {
+            $item['preview'] = $this->createPreview($item['text']);
+        }
         $item['image'] = '';
 
         $Eresus->db->insert($this->table['name'], $item);
@@ -396,7 +399,7 @@ class TArticles extends TListContentPlugin
      * @param array  $item      Массив замен
      * @return string  HTML
      */
-    function replaceMacros($template, $item)
+    public function replaceMacros($template, $item)
     {
         if (file_exists($GLOBALS['Eresus']->fdata . 'articles/'.$item['image'].'.jpg'))
         {
@@ -454,7 +457,7 @@ class TArticles extends TListContentPlugin
      *
      * @return mixed|string
      */
-    function adminRenderContent()
+    public function adminRenderContent()
     {
         $result = null;
         if (!is_null(arg('action')) && arg('action') == 'textupdate')
@@ -500,7 +503,9 @@ class TArticles extends TListContentPlugin
             'buttons' => array('ok', 'cancel'),
         );
 
-        $result = Eresus_Kernel::app()->getPage()->renderForm($form);
+        /** @var TAdminUI $page */
+        $page = Eresus_Kernel::app()->getPage();
+        $result = $page->renderForm($form);
         return $result;
     }
     //-----------------------------------------------------------------------------
@@ -513,6 +518,7 @@ class TArticles extends TListContentPlugin
     public function adminEditItem()
     {
         $Eresus = Eresus_CMS::getLegacyKernel();
+        /** @var TAdminUI $page */
         $page = Eresus_Kernel::app()->getPage();
 
         $item = $Eresus->db->selectItem($this->table['name'], "`id`='".arg('id', 'int')."'");
@@ -579,6 +585,7 @@ class TArticles extends TListContentPlugin
      */
     public function settings()
     {
+        /** @var TAdminUI $page */
         $page = Eresus_Kernel::app()->getPage();
 
         $form = array(
@@ -661,6 +668,7 @@ class TArticles extends TListContentPlugin
     public function clientRenderContent()
     {
         $Eresus = Eresus_CMS::getLegacyKernel();
+        /** @var TClientUI $page */
         $page = Eresus_Kernel::app()->getPage();
 
         if ($page->topic)
@@ -697,6 +705,7 @@ class TArticles extends TListContentPlugin
      */
     public function clientRenderList($options = null)
     {
+        /** @var TClientUI $page */
         $page = Eresus_Kernel::app()->getPage();
 
         $item = array(
@@ -732,6 +741,7 @@ class TArticles extends TListContentPlugin
     public function clientRenderItem()
     {
         $Eresus = Eresus_CMS::getLegacyKernel();
+        /** @var TClientUI $page */
         $page = Eresus_Kernel::app()->getPage();
 
         if ($page->topic != (string) ((int) ($page->topic)))
@@ -809,7 +819,7 @@ class TArticles extends TListContentPlugin
      */
     private function createPreview($text)
     {
-        $text = trim(preg_replace('/<.+>/Us',' ',$text));
+        $text = trim(preg_replace('/<.+>/Us', ' ', $text));
         $text = str_replace(array("\n", "\r"), ' ', $text);
         $text = preg_replace('/\s{2,}/U', ' ', $text);
 
@@ -860,6 +870,7 @@ class TArticles extends TListContentPlugin
     private function adminRenderText()
     {
         $Eresus = Eresus_CMS::getLegacyKernel();
+        /** @var TAdminUI $page */
         $page = Eresus_Kernel::app()->getPage();
 
         $item = $Eresus->db->selectItem('pages', '`id`="' . arg('section', 'int') . '"');
