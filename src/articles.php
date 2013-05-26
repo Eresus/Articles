@@ -749,12 +749,12 @@ class TArticles extends TListContentPlugin
             $page->httpError(404);
         }
 
+        $result = '';
         $item = $Eresus->db->selectItem($this->table['name'],
             "(`id`='" . $page->topic . "') AND (`active`='1')");
         if (is_null($item))
         {
-            $item = $page->httpError(404);
-            $result = $item['content'];
+            $page->httpError(404);
         }
         else
         {
