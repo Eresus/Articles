@@ -650,7 +650,11 @@ class TArticles extends TListContentPlugin
             'description' => '',
             'keywords' => '',
         );
-        Eresus_Kernel::app()->getLegacyKernel()->plugins->clientOnURLSplit($pathItem, arg('url'));
+        $address = explode('/', Eresus_Kernel::app()->getLegacyKernel()->request['path']);
+        $address = array_slice($address, 3);
+        $url = implode('/', $address);
+        $url .= $pathItem['name'] . '/';        
+        Eresus_Kernel::app()->getLegacyKernel()->plugins->clientOnURLSplit($pathItem, $url);
 
         $html = $article->render($this->settings['tmplItem']);
         $html = $this->replaceMacros($html, array());
