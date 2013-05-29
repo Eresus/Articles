@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<declaration uid="ru.eresus.plugins.articles" format="1.00">
+
+	<requires>
+		<plugin name="orm" min="2.01a" max="2.10" />
+	</requires>
+
+</declaration>

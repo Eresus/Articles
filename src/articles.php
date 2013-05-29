@@ -10,7 +10,7 @@
  * @copyright 2007, Eresus Group, http://eresus.ru/
  * @copyright 2010, ООО "Два слона", http://dvaslona.ru/
  * @license http://www.gnu.org/licenses/gpl.txt  GPL License 3
- * @author Михаил Красильников <m.krasilnikov@yandex.ru>
+ * @author Михаил Красильников <mk@dvaslona.ru>
  * @author БерсЪ <bersz@procreat.ru>
  * @author Андрей Афонинский
  *
@@ -167,25 +167,7 @@ class TArticles extends TListContentPlugin
                 'list' => array('caption' => 'Список статей'),
                 'text' => array('caption' => 'Текст на странице', 'name'=>'action', 'value'=>'text'),
             ),
-        ),
-        'sql' => "(
-			`id` int(10) unsigned NOT NULL auto_increment,
-			`section` int(10) unsigned default NULL,
-			`active` tinyint(1) unsigned NOT NULL default '1',
-			`position` int(10) unsigned default NULL,
-			`posted` datetime default NULL,
-			`block` tinyint(1) unsigned NOT NULL default '0',
-			`caption` varchar(255) NOT NULL default '',
-			`preview` text NOT NULL,
-			`text` text NOT NULL,
-			`image` varchar(255) NOT NULL default '',
-			PRIMARY KEY  (`id`),
-			KEY `active` (`active`),
-			KEY `section` (`section`),
-			KEY `position` (`position`),
-			KEY `posted` (`posted`),
-			KEY `block` (`block`)
-		) ENGINE=MyISAM COMMENT='Articles';",
+        )
     );
 
     /**
@@ -233,9 +215,12 @@ class TArticles extends TListContentPlugin
      */
     public function install()
     {
-        parent::install();
+        // parent::install(); TODO Раскомментировать после перехода на Eresus_Plugin
 
-        $dir = $GLOBALS['Eresus']->fdata . $this->name;
+        ORM::getTable($this, 'Article')->create();
+
+        $legacyKernel = Eresus_Kernel::app()->getLegacyKernel();
+        $dir = $legacyKernel->fdata . $this->name;
         if (!file_exists($dir))
         {
             $umask = umask(0000);
@@ -243,7 +228,17 @@ class TArticles extends TListContentPlugin
             umask($umask);
         }
     }
-    //-----------------------------------------------------------------------------
+
+    /**
+     * Дейтвия при удалении плагина
+     *
+     * @return void
+     */
+    public function uninstall()
+    {
+        ORM::getTable($this, 'Article')->drop();
+        parent::uninstall();
+    }
 
     /**
      * Сохранение настроек
@@ -279,118 +274,70 @@ class TArticles extends TListContentPlugin
      */
     public function insert()
     {
-        global $Eresus;
-
-        $item = array();
-        $item['section'] = arg('section', 'int');
-        $item['active'] = true;
-        // FIXME Не задаётся position. Наверно надо учесть режим сортировки
-        $item['posted'] = gettime();
-        $item['block'] = arg('block', 'int');
-        $item['caption'] = arg('caption', 'dbsafe');
-        $item['text'] = arg('text', 'dbsafe');
-        $item['preview'] = arg('preview', 'dbsafe');
-        if (empty($item['preview']))
-        {
-            $item['preview'] = $this->createPreview($item['text']);
-        }
-        $item['image'] = '';
-
-        $Eresus->db->insert($this->table['name'], $item);
-        $item['id'] = $Eresus->db->getInsertedID();
-
-        if (is_uploaded_file($_FILES['image']['tmp_name']))
-        {
-            $tmpFile = $Eresus->fdata . $this->name . '/uploaded.bin';
-            upload('image', $tmpFile);
-
-            $item['image'] = $item['id'].'_'.time();
-            $filename = $Eresus->fdata . 'articles/'.$item['image'];
-            useLib('glib');
-            thumbnail($tmpFile, $filename.'.jpg', $this->settings['imageWidth'],
-                $this->settings['imageHeight'], $this->settings['imageColor']);
-            thumbnail($tmpFile, $filename.'-thmb.jpg', $this->settings['THimageWidth'],
-                $this->settings['THimageHeight'], $this->settings['imageColor']);
-            unlink($tmpFile);
-
-            $Eresus->db->updateItem($this->table['name'], $item, '`id` = "'.$item['id'].'"');
-        }
-
+        $article = new Articles_Entity_Article($this);
+        $article->section = arg('section', 'int');
+        $article->active = true;
+        $article->posted = new DateTime();
+        $article->block = (boolean) arg('block', 'int');
+        $article->caption = arg('caption');
+        $article->text = arg('text');
+        $article->preview = arg('preview');
+        $article->image = 'image';
+        $article->getTable()->persist($article);
         HTTP::redirect(arg('submitURL'));
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Изменение статьи в БД
      */
     public function update()
     {
-        global $Eresus;
-
-        $item = $Eresus->db->selectItem($this->table['name'], "`id`='".arg('update', 'int')."'");
-        $image = $item['image'];
-        $item['section'] = arg('section', 'int');
-        if ( ! is_null(arg('section')) )
+        /** @var Articles_Entity_Article $article */
+        $article = ORM::getTable($this, 'Article')->find(arg('update'));
+        if (null === $article)
         {
-            $item['active'] = arg('active', 'int');
-        }
-        // FIXME Не задаётся position. Наверно надо учесть режим сортировки
-        $item['posted'] = arg('posted', 'dbsafe');
-        $item['block'] = arg('block', 'int');
-        $item['caption'] = arg('caption', 'dbsafe');
-        $item['text'] = arg('text', 'dbsafe');
-        $item['preview'] = arg('preview', 'dbsafe');
-        if (empty($item['preview']) || arg('updatePreview'))
-        {
-            $item['preview'] = $this->createPreview($item['text']);
+            throw new Exception('Запрошенная статья не найдена');
         }
 
-        if (is_uploaded_file($_FILES['image']['tmp_name']))
+        $article->image = 'image';
+        $article->section = arg('section', 'int');
+        if (!is_null(arg('active')))
         {
-            $tmpFile = $Eresus->fdata . $this->name . '/uploaded.bin';
-            upload('image', $tmpFile);
-
-            $filename = $Eresus->fdata . 'articles/'.$image;
-            if (($image != '') && (file_exists($filename.'.jpg')))
-            {
-                unlink($filename.'.jpg');
-                unlink($filename.'-thmb.jpg');
-            }
-            $item['image'] = $item['id'].'_'.time();
-            $filename = $Eresus->fdata . 'articles/'.$item['image'];
-            useLib('glib');
-            thumbnail($tmpFile, $filename.'.jpg', $this->settings['imageWidth'],
-                $this->settings['imageHeight'], $this->settings['imageColor']);
-            thumbnail($tmpFile, $filename.'-thmb.jpg', $this->settings['THimageWidth'],
-                $this->settings['THimageHeight'], $this->settings['imageColor']);
-            unlink($tmpFile);
+            $article->active = (boolean) arg('active', 'int');
         }
-        $Eresus->db->updateItem($this->table['name'], $item, "`id`='".arg('update', 'int')."'");
+        $article->posted = new DateTime(arg('posted'));
+        $article->block = (boolean) arg('block', 'int');
+        $article->caption = arg('caption');
+        $article->text = arg('text');
+        $article->preview = arg('preview');
+        if ('' == $article->preview || arg('updatePreview'))
+        {
+            $article->createPreviewFromText();
+        }
+        $article->getTable()->update($article);
 
         HTTP::redirect(arg('submitURL'));
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Удаление статьи из БД
      *
      * @param int $id  Идентификатор статьи
+     *
+     * @throws Exception
      */
     public function delete($id)
     {
-        global $Eresus;
-
-        $item = $Eresus->db->selectItem($this->table['name'], "`id`='".arg('delete', 'int')."'");
-        $filename = $Eresus->data . $this->name.'/'.$item['image'];
-        if (file_exists($filename.'.jpg'))
+        /** @var Articles_Entity_Article $article */
+        $article = ORM::getTable($this, 'Article')->find($id);
+        if (null === $article)
         {
-            unlink($filename.'.jpg');
-            unlink($filename.'-thmb.jpg');
+            throw new Exception('Запрошенная статья не найдена');
         }
+        $article->getTable()->delete($article);
 
-        parent::delete($id);
+        HTTP::redirect(Eresus_Kernel::app()->getPage()->url());
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Замена макросов в строке
@@ -450,7 +397,6 @@ class TArticles extends TListContentPlugin
         );
         return $result;
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Определяет отображаемый раздел АИ
@@ -475,7 +421,6 @@ class TArticles extends TListContentPlugin
 
         return $result;
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Диалог добавления статьи
@@ -508,42 +453,29 @@ class TArticles extends TListContentPlugin
         $result = $page->renderForm($form);
         return $result;
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Диалог изменения статьи
+     *
+     * @throws Exception
      *
      * @return string
      */
     public function adminEditItem()
     {
-        $Eresus = Eresus_CMS::getLegacyKernel();
+        /** @var Articles_Entity_Article $article */
+        $article = ORM::getTable($this, 'Article')->find(arg('id'));
+        if (null === $article)
+        {
+            throw new Exception('Запрошенная статья не найдена');
+        }
+
         /** @var TAdminUI $page */
         $page = Eresus_Kernel::app()->getPage();
 
-        $item = $Eresus->db->selectItem($this->table['name'], "`id`='".arg('id', 'int')."'");
-
-        if (file_exists($Eresus->fdata . $this->name.'/'.$item['image'].'-thmb.jpg'))
-        {
-            $image = 'Изображение: <br /><img src="'. $Eresus->data . $this->name.'/'.$item['image'].
-                '-thmb.jpg" alt="" />';
-        }
-        else
-        {
-            $image = '';
-        }
-
         if (arg('action', 'word') == 'delimage')
         {
-            $filename = $Eresus->fdata . $this->name.'/'.$item['image'];
-            if (is_file($filename.'.jpg'))
-            {
-                unlink($filename.'.jpg');
-            }
-            if (is_file($filename.'-thmb.jpg'))
-            {
-                unlink($filename.'-thmb.jpg');
-            }
+            $article->image = null;
             HTTP::redirect($page->url());
         }
 
@@ -552,32 +484,35 @@ class TArticles extends TListContentPlugin
             'caption' => 'Изменить статью',
             'width' => '95%',
             'fields' => array (
-                array('type'=>'hidden','name'=>'update', 'value'=>$item['id']),
-                array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок', 'width' => '100%',
-                    'maxlength' => '255'),
-                array ('type' => 'html', 'name' => 'text', 'label' => 'Полный текст', 'height' => '200px'),
+                array('type' => 'hidden', 'name' => 'update', 'value' => $article->id),
+                array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок',
+                    'width' => '100%', 'maxlength' => '255'),
+                array ('type' => 'html', 'name' => 'text', 'label' => 'Полный текст',
+                    'height' => '200px'),
                 array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание',
                     'height' => '5'),
                 array ('type' => 'checkbox', 'name'=>'updatePreview',
                     'label'=>'Обновить краткое описание автоматически', 'value' => false),
-                array ('type' => ($this->settings['blockMode'] == self::BLOCK_MANUAL)?'checkbox':'hidden',
-                    'name' => 'block', 'label' => 'Показывать в блоке'),
+                array ('type' => $this->settings['blockMode'] == self::BLOCK_MANUAL
+                    ? 'checkbox' : 'hidden', 'name' => 'block', 'label' => 'Показывать в блоке'),
                 array ('type' => 'file', 'name' => 'image', 'label' => 'Картинка', 'width' => '100',
-                    'comment'=>(is_file($Eresus->fdata.$this->name.'/'.$item['image'].'.jpg') ?
-                        '<a href="'.$page->url(array('action'=>'delimage')).'">Удалить</a>' : '')),
+                    'comment' => $article->imageUrl ?
+                    '<a href="' . $page->url(array('action'=>'delimage')) . '">Удалить</a>'  : ''),
                 array ('type' => 'divider'),
-                array ('type' => 'edit', 'name' => 'section', 'label' => 'Раздел', 'access'=>ADMIN),
+                array ('type' => 'edit', 'name' => 'section', 'label' => 'Раздел',
+                    'access' => ADMIN),
                 array ('type' => 'edit', 'name'=>'posted', 'label'=>'Написано'),
                 array ('type' => 'checkbox', 'name'=>'active', 'label'=>'Активно'),
-                array ('type' => 'text', 'value' => $image),
+                array ('type' => 'text', 'value' => $article->imageUrl
+                    ? 'Изображение: <br><img src="' . $article->thumbUrl . '" alt="">' : ''),
             ),
             'buttons' => array('ok', 'apply', 'cancel'),
         );
-        $result = $page->renderForm($form, $item);
+        /** @var array $article */
+        $html = $page->renderForm($form, $article);
 
-        return $result;
+        return $html;
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Диалог настроек
@@ -658,7 +593,6 @@ class TArticles extends TListContentPlugin
         $result = $page->renderForm($form, $this->settings);
         return $result;
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Формирование контента
@@ -693,7 +627,6 @@ class TArticles extends TListContentPlugin
 
         return parent::clientRenderContent();
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Отрисовка списка статей
@@ -717,7 +650,6 @@ class TArticles extends TListContentPlugin
 
         return $result;
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Отрисовка статьи в списке
@@ -731,7 +663,6 @@ class TArticles extends TListContentPlugin
         $result = $this->replaceMacros($this->settings['tmplListItem'], $item);
         return $result;
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Отрисовка статьи
@@ -769,7 +700,6 @@ class TArticles extends TListContentPlugin
         $Eresus->plugins->clientOnURLSplit($item, arg('url'));
         return $result;
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Обработчик события clientOnPageRender
@@ -783,67 +713,30 @@ class TArticles extends TListContentPlugin
         $text = str_replace('$(ArticlesBlock)', $articles, $text);
         return $text;
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Обрабатывает запрос на переключение активности статьи
      *
      * @param int $id  ID статьи
      *
-     * @return void
+     * @throws Exception
      *
-     * @uses DB::getHandler
-     * @uses DB::execute
-     * @uses HTTP::redirect
+     * @return void
      */
     public function toggle($id)
     {
+        /** @var Articles_Entity_Article $article */
+        $article = ORM::getTable($this, 'Article')->find($id);
+        if (null === $article)
+        {
+            throw new Exception('Запрошенная статья не найдена');
+        }
+        $article->active = !$article->active;
+        $article->getTable()->update($article);
+
         $page = Eresus_Kernel::app()->getPage();
-
-        $q = DB::getHandler()->createUpdateQuery();
-        $e = $q->expr;
-        $q->update($this->table['name'])
-            ->set('active', $e->not('active'))
-            ->where($e->eq('id', $q->bindValue($id, null, PDO::PARAM_INT)));
-        DB::execute($q);
-
         HTTP::redirect(str_replace('&amp;', '&', $page->url()));
     }
-    //-----------------------------------------------------------------------------
-
-    /**
-     * Создание краткого текста
-     *
-     * @param string $text
-     * @return string
-     */
-    private function createPreview($text)
-    {
-        $text = trim(preg_replace('/<.+>/Us', ' ', $text));
-        $text = str_replace(array("\n", "\r"), ' ', $text);
-        $text = preg_replace('/\s{2,}/U', ' ', $text);
-
-        if (!$this->settings['previewMaxSize'])
-        {
-            $this->settings['previewMaxSize'] = 500;
-        }
-
-        if ($this->settings['previewSmartSplit'])
-        {
-            preg_match("/\A(.{1,".$this->settings['previewMaxSize']."})(\.\s|\.|\Z)/Us", $text, $result);
-            $result = $result[1].'...';
-        }
-        else
-        {
-            $result = mb_substr($text, 0, $this->settings['previewMaxSize']);
-            if (mb_strlen($text) > $this->settings['previewMaxSize'])
-            {
-                $result .= '...';
-            }
-        }
-        return $result;
-    }
-    //-----------------------------------------------------------------------------
 
     /**
      * Изменение текста на странице
@@ -860,7 +753,6 @@ class TArticles extends TListContentPlugin
 
         HTTP::redirect(str_replace('&amp;', '&', $page->url(array('action' => 'text'))));
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Диалог редактирования текста на странице
@@ -889,7 +781,6 @@ class TArticles extends TListContentPlugin
         $result = $page->renderForm($form);
         return $page->renderTabs($this->table['tabs']) . $result;
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Отрисовка блока статей
@@ -918,7 +809,6 @@ class TArticles extends TListContentPlugin
         }
         return $result;
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Форматирование даты
