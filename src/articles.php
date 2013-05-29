@@ -110,17 +110,17 @@ class TArticles extends TListContentPlugin
 			<div class="ArticlesListItem">
 				<h3>$(caption)</h3>
 				$(posted)<br />
-				<img src="$(thumbnail)" alt="$(caption)" width="$(thumbnailWidth)" height="$(thumbnailHeight)" />
+				<img src="$(thumbUrl)" alt="$(caption)" width="$(thumbWidth)" height="$(thumbHeight)" />
 				$(preview)
 				<div class="controls">
-					<a href="$(link)">Полный текст...</a>
+					<a href="$(clientUrl)">Полный текст...</a>
 				</div>
 			</div>
 		',
         'tmplItem' => '
 			<div class="ArticlesItem">
 				<h1>$(caption)</h1><b>$(posted)</b><br />
-				<img src="$(image)" alt="$(caption)" width="$(imageWidth)" height="$(imageHeight)" style="float: left;" />
+				<img src="$(imageUrl)" alt="$(caption)" width="$(imageWidth)" height="$(imageHeight)" style="float: left;" />
 				$(text)
 				<br /><br />
 			</div>
@@ -592,43 +592,42 @@ class TArticles extends TListContentPlugin
     /**
      * Отрисовка списка статей
      *
-     * @param array $options  Свойства списка статей
-     *              $options['pages'] bool Отображать переключатель страниц
-     *              $options['oldordering'] bool Сортировать элементы
      * @return string
      */
-    public function clientRenderList($options = null)
+    public function clientRenderList()
     {
         /** @var TClientUI $page */
         $page = Eresus_Kernel::app()->getPage();
+        /** @var Articles_Entity_Table_Article $table */
+        $table = ORM::getTable($this, 'Article');
+        /** @var Articles_Entity_Article[] $articles */
+        $articles = $table->findInSection($page->id, $this->settings['itemsPerPage'],
+            ($page->subpage - 1) * $this->settings['itemsPerPage']);
+        $items = '';
+        if (count($articles))
+        {
+            foreach ($articles as $article)
+            {
+                $items .= $article->render($this->settings['tmplListItem']);
+            }
+            $items .= $this->clientRenderPages();
+        }
 
-        $item = array(
-            'items' => parent::clientRenderList($options),
+        $vars = array(
+            'items' => $items,
             'title' => $page->title,
             'content' => $page->content,
         );
-        $result = parent::replaceMacros($this->settings['tmplList'], $item);
 
-        return $result;
-    }
+        $html = parent::replaceMacros($this->settings['tmplList'], $vars);
 
-    /**
-     * Отрисовка статьи в списке
-     *
-     * @param array $item  Свойства статьи
-     * @return string
-     */
-    public function clientRenderListItem($item)
-    {
-        $item['posted'] = $this->formatDate($item['posted'], $this->settings['dateFormatPreview']);
-        $result = $this->replaceMacros($this->settings['tmplListItem'], $item);
-        return $result;
+        return $html;
     }
 
     /**
      * Отрисовка статьи
      *
-     * @return string|mixed
+     * @return string
      */
     public function clientRenderItem()
     {

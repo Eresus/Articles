@@ -75,10 +75,34 @@ class Articles_Entity_Table_Article extends ORM_Table
                 'type' => 'string',
             )
         ));
+        $this->setOrdering($this->plugin->settings['listSortMode'],
+            $this->plugin->settings['listSortDesc']);
         $this->index('admin_idx', array('fields' => array('section', 'position')));
         $this->index('cl_position_idx', array('fields' => array('section', 'active', 'position')));
         $this->index('cl_date_idx', array('fields' => array('section', 'active', 'posted')));
         $this->index('cl_block_idx', array('fields' => array('block', 'active')));
+    }
+
+    /**
+     * Возвращает список статей в указанном разделе
+     *
+     * @param int  $sectionId  идентификатор раздела
+     * @param int  $limit      ограничение на количество возвращаемых статей
+     * @param int  $offset     пропустить указанное количество статей
+     * @param bool $inactive   выводить неактивные объекты (true) или только активные (false)
+     * @return array
+     */
+    public function findInSection($sectionId, $limit = null, $offset = 0, $inactive = false)
+    {
+        $q = $this->createSelectQuery();
+        $where = array();
+        $where []= $q->expr->eq('section', $q->bindValue($sectionId, null, PDO::PARAM_INT));
+        if (true !== $inactive)
+        {
+            $where []= $q->expr->eq('active', $q->bindValue(true, null, PDO::PARAM_INT));
+        }
+        $q->where($q->expr->lAnd($where));
+        return $this->loadFromQuery($q, $limit, $offset);
     }
 }
 
