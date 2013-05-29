@@ -745,66 +745,21 @@ class TArticles extends TListContentPlugin
      */
     private function renderArticlesBlock()
     {
-        $Eresus = Eresus_CMS::getLegacyKernel();
-
-        $result = '';
-        $items = $Eresus->db->select($this->table['name'],
-            "`active`='1'" . (
-            $this->settings['blockMode'] == self::BLOCK_MANUAL ? " AND `block`='1'" : ''
-            ),
-            ($this->table['sortDesc'] ? '-' : '') . $this->table['sortMode'], '',
-            $this->settings['blockCount']);
-
-        if (count($items))
+        /** @var Articles_Entity_Table_Article $table */
+        $table = ORM::getTable($this, 'Article');
+        $q = $table->createSelectQuery();
+        if (self::BLOCK_MANUAL == $this->settings['blockMode'])
         {
-            foreach ($items as $item)
-            {
-                $item['posted'] = $this->formatDate($item['posted'], $this->settings['dateFormatPreview']);
-                $result .= $this->replaceMacros($this->settings['tmplBlockItem'], $item);
-            }
+            $q->where($q->expr->eq('block', $q->bindValue(true, null, PDO::PARAM_BOOL)));
         }
-        return $result;
-    }
-
-    /**
-     * Форматирование даты
-     *
-     * @param string $date    Дата в формате YYYY-MM-DD hh:mm:ss
-     * @param string $format  Правила форматирования даты
-     *
-     * @return string  отформатированная дата
-     */
-    private function formatDate($date, $format = DATETIME_NORMAL)
-    {
-        if (empty($date))
+        /** @var Articles_Entity_Article[] $articles */
+        $articles = $table->loadFromQuery($q, $this->settings['blockCount']);
+         $html = '';
+        foreach ($articles as $article)
         {
-            $result = DATETIME_UNKNOWN;
+            $html .= $article->render($this->settings['tmplBlockItem']);
         }
-        else
-        {
-            preg_match_all('/(?<!\\\)[hHisdDmMyY]/', $format, $m, PREG_OFFSET_CAPTURE);
-            $replace = array(
-                'Y' => substr($date, 0, 4),
-                'm' => substr($date, 5, 2),
-                'd' => substr($date, 8, 2),
-                'h' => substr($date, 11, 2),
-                'i' => substr($date, 14, 2),
-                's' => substr($date, 17, 2)
-            );
-            $replace['y'] = substr($replace['Y'], 2, 2);
-            $replace['M'] = constant('MONTH_'.$replace['m']);
-            $replace['D'] = $replace['d']{0} == '0' ? $replace['d']{1} : $replace['d'];
-            $replace['H'] = $replace['h']{0} == '0' ? $replace['h']{1} : $replace['h'];
-
-            $delta = 0;
-            for ($i = 0; $i<count($m[0]); $i++)
-            {
-                $format = substr_replace($format, $replace[$m[0][$i][0]], $m[0][$i][1]+$delta, 1);
-                $delta += strlen($replace[$m[0][$i][0]]) - 1;
-            }
-            $result = $format;
-        }
-        return $result;
+        return $html;
     }
 }
 

@@ -76,7 +76,7 @@ class Articles_Entity_Table_Article extends ORM_Table
             )
         ));
         $this->setOrdering($this->plugin->settings['listSortMode'],
-            $this->plugin->settings['listSortDesc']);
+            $this->plugin->settings['listSortDesc'] ? ezcQuerySelect::DESC : ezcQuerySelect::ASC);
         $this->index('admin_idx', array('fields' => array('section', 'position')));
         $this->index('cl_position_idx', array('fields' => array('section', 'active', 'position')));
         $this->index('cl_date_idx', array('fields' => array('section', 'active', 'posted')));
