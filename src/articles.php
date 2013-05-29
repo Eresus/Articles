@@ -130,8 +130,6 @@ class TArticles extends TListContentPlugin
         'previewSmartSplit' => true,
         'listSortMode' => 'posted',
         'listSortDesc' => true,
-        'dateFormatPreview' => DATE_SHORT,
-        'dateFormatFullText' => DATE_LONG,
         'blockMode' => 0, # 0 - отключить, 1 - последние, 2 - избранные
         'blockCount' => 5,
         'THimageWidth' => 120,
@@ -177,12 +175,11 @@ class TArticles extends TListContentPlugin
      */
     public function __construct()
     {
-        global $Eresus;
-
         parent::__construct();
 
         if ($this->settings['blockMode'])
         {
+            $Eresus = Eresus_Kernel::app()->getLegacyKernel();
             $Eresus->plugins->events['clientOnPageRender'][] = $this->name;
         }
 
@@ -206,7 +203,6 @@ class TArticles extends TListContentPlugin
         }
 
     }
-    //-----------------------------------------------------------------------------
 
     /**
      * Процедура установки плагина
@@ -348,54 +344,22 @@ class TArticles extends TListContentPlugin
      */
     public function replaceMacros($template, $item)
     {
-        if (file_exists($GLOBALS['Eresus']->fdata . 'articles/'.$item['image'].'.jpg'))
-        {
-            $image = $GLOBALS['Eresus']->data . 'articles/'.$item['image'].'.jpg';
-            $thumbnail = $GLOBALS['Eresus']->data . 'articles/'.$item['image'].'-thmb.jpg';
-            $width = $this->settings['imageWidth'];
-            $height = $this->settings['imageHeight'];
-            $THwidth = $this->settings['THimageWidth'];
-            $THheight = $this->settings['THimageHeight'];
-
-        }
-        else
-        {
-            $thumbnail = $image = $GLOBALS['Eresus']->style . 'dot.gif';
-            $width = $height = $THwidth = $THheight = 1;
-        }
-
-        $result = str_replace(
+        $html = str_replace(
             array(
-                '$(caption)',
-                '$(preview)',
-                '$(text)',
-                '$(posted)',
-                '$(link)',
-                '$(section)',
-                '$(image)',
-                '$(thumbnail)',
                 '$(imageWidth)',
                 '$(imageHeight)',
-                '$(thumbnailWidth)',
-                '$(thumbnailHeight)',
+                '$(thumbWidth)',
+                '$(thumbHeight)',
             ),
             array(
-                strip_tags(htmlspecialchars(StripSlashes($item['caption']))),
-                StripSlashes($item['preview']),
-                StripSlashes($item['text']),
-                $item['posted'],
-                Eresus_Kernel::app()->getPage()->clientURL($item['section']).$item['id'].'/',
-                Eresus_Kernel::app()->getPage()->clientURL($item['section']),
-                $image,
-                $thumbnail,
-                $width,
-                $height,
-                $THwidth,
-                $THheight,
+                $this->settings['imageWidth'],
+                $this->settings['imageHeight'],
+                $this->settings['THimageWidth'],
+                $this->settings['THimageHeight'],
             ),
             $template
         );
-        return $result;
+        return parent::replaceMacros($html, $item);
     }
 
     /**
@@ -534,7 +498,6 @@ class TArticles extends TListContentPlugin
                 array('type'=>'header','value'=>'Параметры полнотекстового просмотра'),
                 array('type'=>'memo','name'=>'tmplItem','label'=>'Шаблон полнотекстового просмотра',
                     'height'=>'5'),
-                array('type'=>'edit','name'=>'dateFormatFullText','label'=>'Формат даты', 'width'=>'100px'),
                 array('type'=>'header', 'value' => 'Параметры списка'),
                 array('type'=>'edit','name'=>'itemsPerPage','label'=>'Статей на страницу','width'=>'50px',
                     'maxlength'=>'2'),
@@ -547,7 +510,6 @@ class TArticles extends TListContentPlugin
 				'),
                 array('type'=>'memo','name'=>'tmplListItem','label'=>'Шаблон элемента списка',
                     'height'=>'5'),
-                array('type'=>'edit','name'=>'dateFormatPreview','label'=>'Формат даты', 'width'=>'100px'),
                 array('type'=>'select','name'=>'listSortMode','label'=>'Сортировка',
                     'values' => array('posted', 'position'),
                     'items' => array('По дате добавления', 'Ручная')),
@@ -578,14 +540,13 @@ class TArticles extends TListContentPlugin
                     "<b>$(preview)</b> - краткий текст<br />\n".
                     "<b>$(text)</b> - полный текст<br />\n".
                     "<b>$(posted)</b> - дата публикации<br />\n".
-                    "<b>$(link)</b> - адрес статьи (URL)<br />\n".
-                    "<b>$(section)</b> - адрес списка статей (URL)<br />\n".
-                    "<b>$(image)</b> - адрес картинки (URL)<br />\n".
-                    "<b>$(thumbnail)</b> - адрес миниатюры (URL)<br />\n".
+                    "<b>$(clientUrl)</b> - адрес статьи (URL)<br />\n".
+                    "<b>$(imageUrl)</b> - адрес картинки (URL)<br />\n".
+                    "<b>$(thumbUrl)</b> - адрес миниатюры (URL)<br />\n".
                     "<b>$(imageWidth)</b> - ширина картинки<br />\n".
                     "<b>$(imageHeight)</b> - высота картинки<br />\n".
-                    "<b>$(thumbnailWidth)</b> - ширина миниатюры<br />\n".
-                    "<b>$(thumbnailHeight)</b> - высота миниатюры<br />\n"
+                    "<b>$(thumbWidth)</b> - ширина миниатюры<br />\n".
+                    "<b>$(thumbHeight)</b> - высота миниатюры<br />\n"
                 ),
             ),
             'buttons' => array('ok', 'apply', 'cancel'),
@@ -671,34 +632,30 @@ class TArticles extends TListContentPlugin
      */
     public function clientRenderItem()
     {
-        $Eresus = Eresus_CMS::getLegacyKernel();
         /** @var TClientUI $page */
         $page = Eresus_Kernel::app()->getPage();
-
-        if ($page->topic != (string) ((int) ($page->topic)))
+        /** @var Articles_Entity_Article $article */
+        $article = ORM::getTable($this, 'Article')->find($page->topic);
+        if (null === $article || false === $article->active)
         {
             $page->httpError(404);
         }
 
-        $result = '';
-        $item = $Eresus->db->selectItem($this->table['name'],
-            "(`id`='" . $page->topic . "') AND (`active`='1')");
-        if (is_null($item))
-        {
-            $page->httpError(404);
-        }
-        else
-        {
-            $item['posted'] = $this->formatDate($item['posted'], $this->settings['dateFormatFullText']);
-            $result = $this->replaceMacros($this->settings['tmplItem'], $item);
-        }
-        $page->section[] = $item['caption'];
-        $item['access'] = $page->access;
-        $item['name'] = $item['id'];
-        $item['title'] = $item['caption'];
-        $item['hint'] = $item['description'] = $item['keywords'] = '';
-        $Eresus->plugins->clientOnURLSplit($item, arg('url'));
-        return $result;
+        $page->section []= $article->caption;
+
+        $pathItem = array(
+            'access' => $page->access,
+            'name' => $article->id,
+            'title' => $article->caption,
+            'hint' => '',
+            'description' => '',
+            'keywords' => '',
+        );
+        Eresus_Kernel::app()->getLegacyKernel()->plugins->clientOnURLSplit($pathItem, arg('url'));
+
+        $html = $article->render($this->settings['tmplItem']);
+        $html = $this->replaceMacros($html, array());
+        return $html;
     }
 
     /**

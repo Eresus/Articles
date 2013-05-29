@@ -28,18 +28,19 @@
 /**
  * Модель статьи
  *
- * @property       int      $id        идентификатор
- * @property       int      $section   идентифкатор раздела
- * @property       bool     $active    вкл/выкл
- * @property       int      $position  порядковый номер
- * @property       DateTime $posted    дата публикации
- * @property       bool     $block     показывать в блоке
- * @property       string   $caption   заголовок
- * @property       string   $preview   краткий текст
- * @property       string   $text      полный текст
- * @property-write string   $image     задаёт картинку по имени элемента массива $_FILES
- * @property-read  string   $imageUrl  адрес картинки
- * @property-read  string   $thumbUrl  адрес миниатюры
+ * @property       int      $id         идентификатор
+ * @property       int      $section    идентифкатор раздела
+ * @property       bool     $active     вкл/выкл
+ * @property       int      $position   порядковый номер
+ * @property       DateTime $posted     дата публикации
+ * @property       bool     $block      показывать в блоке
+ * @property       string   $caption    заголовок
+ * @property       string   $preview    краткий текст
+ * @property       string   $text       полный текст
+ * @property-write string   $image      задаёт картинку по имени элемента массива $_FILES
+ * @property-read  string   $imageUrl   адрес картинки
+ * @property-read  string   $thumbUrl   адрес миниатюры
+ * @property-read  string   $clientUrl  адрес статьи
  *
  * @since 3.01
  */
@@ -70,6 +71,11 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
         }
     }
 
+    /**
+     * Действия после сохренения объекта в БД
+     *
+     * @since 3.01
+     */
     public function afterSave()
     {
         if ($this->tmpFile)
@@ -123,6 +129,7 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
 
     /**
      * @see {@link ArrayAccess}
+     * @since 3.01
      */
     public function offsetExists($offset)
     {
@@ -131,6 +138,7 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
 
     /**
      * @see {@link ArrayAccess}
+     * @since 3.01
      */
     public function offsetGet($offset)
     {
@@ -144,6 +152,7 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
 
     /**
      * @see {@link ArrayAccess}
+     * @since 3.01
      */
     public function offsetSet($offset, $value)
     {
@@ -152,10 +161,58 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
 
     /**
      * @see {@link ArrayAccess}
+     * @since 3.01
      */
     public function offsetUnset($offset)
     {
         $this->{$offset} = null;
+    }
+
+    /**
+     * Отрисовывает сатью, используя шаблон
+     *
+     * @param string $template
+     *
+     * @return string  HTML
+     *
+     * @since 3.01
+     * @todo удалить после перехода на Dwoo
+     */
+    public function render($template)
+    {
+        $html = str_replace(
+            array(
+                '$(caption)',
+                '$(preview)',
+                '$(text)',
+                '$(posted)',
+                '$(clientUrl)',
+                '$(imageUrl)',
+                '$(thumbUrl)',
+            ),
+            array(
+                $this->caption,
+                $this->preview,
+                $this->text,
+                $this->posted->format('d.m.y'),
+                $this->clientUrl,
+                $this->imageUrl,
+                $this->thumbUrl,
+            ),
+            $template
+        );
+        return $html;
+    }
+
+    /**
+     * Задаёт заголовок статьи
+     *
+     * @param string $caption
+     * @since 3.01
+     */
+    protected function setCaption($caption)
+    {
+        $this->setProperty('caption', strip_tags(htmlspecialchars($caption)));
     }
 
     /**
@@ -214,6 +271,18 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
             return Eresus_Kernel::app()->getLegacyKernel()->data . $localPart;
         }
         return null;
+    }
+
+    /**
+     * Возвращает адрес статьи
+     *
+     * @return string
+     *
+     * @since 3.01
+     */
+    protected function getClientUrl()
+    {
+        return Eresus_Kernel::app()->getPage()->clientURL($this->section) . $this->id . '/';
     }
 }
 
