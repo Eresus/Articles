@@ -29,7 +29,7 @@
  * Модель статьи
  *
  * @property       int      $id         идентификатор
- * @property       int      $section    идентифкатор раздела
+ * @property       int      $section    идентификатор раздела
  * @property       bool     $active     вкл/выкл
  * @property       int      $position   порядковый номер
  * @property       DateTime $posted     дата публикации
@@ -63,6 +63,26 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
     public function beforeSave(ezcQuery $query)
     {
         parent::beforeSave($query);
+
+        /*
+         * Если это новая статья — вычисляем новый порядковый номер
+         */
+        if ($query instanceof ezcQueryInsert)
+        {
+            $q = $this->getTable()->createSelectQuery(false);
+            $q->select('*');
+            $e = $q->expr;
+            $q->where($e->eq('section', $q->bindValue($this->section, null, PDO::PARAM_INT)));
+            $q->orderBy('position', $q::DESC);
+            /** @var self $max */
+            $max = $this->getTable()->loadOneFromQuery($q);
+            $query->set('position',
+                $query->bindValue($max->position + 1, ":position", PDO::PARAM_INT));
+        }
+
+        /*
+         * Обновляем краткое описание, если надо
+         */
         if ('' === $this->preview)
         {
             $this->createPreviewFromText();
@@ -72,7 +92,7 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
     }
 
     /**
-     * Действия после сохренения объекта в БД
+     * Действия после сохранения объекта в БД
      *
      * @since 3.01
      */
@@ -182,7 +202,7 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
     }
 
     /**
-     * Отрисовывает сатью, используя шаблон
+     * Отрисовывает статью, используя шаблон
      *
      * @param string $template
      *
@@ -231,7 +251,7 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
     /**
      * Задаёт изображение
      *
-     * Если $value — null, изобаржение будет удалено
+     * Если $value — null, изображение будет удалено
      *
      * @param string|null $value
      *

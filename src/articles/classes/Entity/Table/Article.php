@@ -90,7 +90,10 @@ class Articles_Entity_Table_Article extends ORM_Table
      * @param int  $limit      ограничение на количество возвращаемых статей
      * @param int  $offset     пропустить указанное количество статей
      * @param bool $inactive   выводить неактивные объекты (true) или только активные (false)
+     *
      * @return array
+     *
+     * @since 3.01
      */
     public function findInSection($sectionId, $limit = null, $offset = 0, $inactive = false)
     {
@@ -103,6 +106,29 @@ class Articles_Entity_Table_Article extends ORM_Table
         }
         $q->where($q->expr->lAnd($where));
         return $this->loadFromQuery($q, $limit, $offset);
+    }
+
+    /**
+     * Возвращает количество статей в указанном разделе
+     *
+     * @param int  $sectionId  идентификатор раздела
+     * @param bool $inactive   учитывать неактивные объекты (true) или только активные (false)
+     *
+     * @return int
+     *
+     * @since 3.01
+     */
+    public function countInSection($sectionId, $inactive = false)
+    {
+        $q = $this->createCountQuery();
+        $where = array();
+        $where []= $q->expr->eq('section', $q->bindValue($sectionId, null, PDO::PARAM_INT));
+        if (true !== $inactive)
+        {
+            $where []= $q->expr->eq('active', $q->bindValue(true, null, PDO::PARAM_INT));
+        }
+        $q->where($q->expr->lAnd($where));
+        return $this->count($q);
     }
 }
 
