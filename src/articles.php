@@ -39,7 +39,7 @@
  *
  * @package Articles
  */
-class TArticles extends TListContentPlugin
+class Articles extends ContentPlugin
 {
     /**
      * Режим блока: блок отключен
@@ -60,22 +60,10 @@ class TArticles extends TListContentPlugin
     const BLOCK_MANUAL = 2;
 
     /**
-     * Имя плагина
-     * @var string
-     */
-    public $name = 'articles';
-
-    /**
      * Требуемая версия ядра
      * @var string
      */
     public $kernel = '3.00b';
-
-    /**
-     * Тип плагина
-     * @var string
-     */
-    public $type = 'client,content,ondemand';
 
     /**
      * Название плагина
@@ -179,8 +167,7 @@ class TArticles extends TListContentPlugin
 
         if ($this->settings['blockMode'])
         {
-            $Eresus = Eresus_Kernel::app()->getLegacyKernel();
-            $Eresus->plugins->events['clientOnPageRender'][] = $this->name;
+            $this->listenEvents('clientOnPageRender');
         }
 
         $this->table['sortMode'] = $this->settings['listSortMode'];
@@ -201,7 +188,6 @@ class TArticles extends TListContentPlugin
                 )
             ), $temp);
         }
-
     }
 
     /**
@@ -211,7 +197,7 @@ class TArticles extends TListContentPlugin
      */
     public function install()
     {
-        // parent::install(); TODO Раскомментировать после перехода на Eresus_Plugin
+        parent::install();
 
         ORM::getTable($this, 'Article')->create();
 
@@ -235,35 +221,6 @@ class TArticles extends TListContentPlugin
         ORM::getTable($this, 'Article')->drop();
         parent::uninstall();
     }
-
-    /**
-     * Сохранение настроек
-     */
-    public function updateSettings()
-    {
-        global $Eresus;
-
-        $item = $Eresus->db->selectItem('`plugins`', "`name`='".$this->name."'");
-        $item['settings'] = decodeOptions($item['settings']);
-        $keys = array_keys($this->settings);
-        foreach ($keys as $key)
-        {
-            $this->settings[$key] = isset($Eresus->request['arg'][$key]) ?
-                $Eresus->request['arg'][$key] : '';
-        }
-
-        if ($this->settings['blockMode'])
-        {
-            $item['type'] = 'client,content';
-        }
-        else
-        {
-            $item['type'] = 'client,content,ondemand';
-        }
-        $item['settings'] = encodeOptions($this->settings);
-        $Eresus->db->updateItem('plugins', $item, "`name`='".$this->name."'");
-    }
-    //-----------------------------------------------------------------------------
 
     /**
      * Добавление статьи в БД
@@ -380,7 +337,7 @@ class TArticles extends TListContentPlugin
         }
         else
         {
-            $result = parent::adminRenderContent();
+            $result = $this->parentAdminRenderContent();
         }
 
         return $result;
@@ -586,7 +543,7 @@ class TArticles extends TListContentPlugin
             }
         }
 
-        return parent::clientRenderContent();
+        return $this->parentClientRenderContent();
     }
 
     /**
@@ -764,6 +721,166 @@ class TArticles extends TListContentPlugin
             $html .= $article->render($this->settings['tmplBlockItem']);
         }
         return $html;
+    }
+
+    /**
+     * @return string|void
+     * @todo метод создан на время рефакторинга
+     */
+    private	function parentAdminRenderContent()
+    {
+        $html = '';
+        switch (true)
+        {
+            case !is_null(arg('update')):
+                $this->update();
+                break;
+            case !is_null(arg('toggle')):
+                $this->toggle(arg('toggle', 'dbsafe'));
+                break;
+            case !is_null(arg('delete')):
+                $this->delete(arg('delete', 'dbsafe'));
+                break;
+            case !is_null(arg('up')):
+                $this->table['sortDesc'] ?
+                    $this->down(arg('up', 'dbsafe')) :
+                    $this->up(arg('up', 'dbsafe'));
+                break;
+            case !is_null(arg('down')):
+                if ($this->table['sortDesc'])
+                {
+                    $this->up(arg('down', 'dbsafe'));
+                }
+                else
+                {
+                    $this->down(arg('down', 'dbsafe'));
+                }
+                break;
+            case !is_null(arg('id')):
+                $html = $this->adminEditItem();
+                break;
+            case !is_null(arg('action')):
+                switch (arg('action'))
+                {
+                    case 'create':
+                        $html = $this->adminAddItem();
+                        break;
+                    case 'insert':
+                        $this->insert();
+                        break;
+                }
+                break;
+            default:
+                if (!is_null(arg('section')))
+                {
+                    $this->table['condition'] = "`section`='".arg('section', 'int')."'";
+                }
+                /** @var TAdminUI $page */
+                $page = Eresus_Kernel::app()->getPage();
+                $html = $page->renderTable($this->table);
+        }
+        return $html;
+    }
+
+    /**
+     * @param $id
+     */
+    private function up($id)
+    {
+        $sql_prefix = strpos($this->table['sql'], '`section`') ?
+            "(`section`=".arg('section', 'int').") " : 'TRUE';
+        dbReorderItems($this->table['name'], $sql_prefix);
+        # FIXME: Escaping
+        $item = Eresus_CMS::getLegacyKernel()->db->
+            selectItem($this->table['name'], "`".$this->table['key']."`='".$id."'");
+        if ($item['position'] > 0)
+        {
+            $temp = Eresus_CMS::getLegacyKernel()->db->
+                selectItem($this->table['name'],"$sql_prefix AND (`position`='".($item['position']-1)."')");
+            $temp['position'] = $item['position'];
+            $item['position']--;
+            Eresus_CMS::getLegacyKernel()->db->
+                updateItem($this->table['name'], $item, "`".$this->table['key']."`='".$item['id']."'");
+            Eresus_CMS::getLegacyKernel()->db->
+                updateItem($this->table['name'], $temp, "`".$this->table['key']."`='".$temp['id']."'");
+        }
+        HTTP::redirect(str_replace('&amp;', '&', Eresus_Kernel::app()->getPage()->url()));
+    }
+
+    /**
+     * @param $id
+     */
+    private function down($id)
+    {
+        $sql_prefix = strpos($this->table['sql'], '`section`') ?
+            "(`section`=".arg('section', 'int').") " : 'TRUE';
+        dbReorderItems($this->table['name'], $sql_prefix);
+        $count = Eresus_CMS::getLegacyKernel()->db->count($this->table['name'], $sql_prefix);
+        #FIXME: Escaping
+        $item = Eresus_CMS::getLegacyKernel()->db->
+            selectItem($this->table['name'], "`".$this->table['key']."`='".$id."'");
+        if ($item['position'] < $count-1)
+        {
+            $temp = Eresus_CMS::getLegacyKernel()->db->
+                selectItem($this->table['name'],"$sql_prefix AND (`position`='".($item['position']+1)."')");
+            $temp['position'] = $item['position'];
+            $item['position']++;
+            Eresus_CMS::getLegacyKernel()->db->
+                updateItem($this->table['name'], $item, "`".$this->table['key']."`='".$item['id']."'");
+            Eresus_CMS::getLegacyKernel()->db->
+                updateItem($this->table['name'], $temp, "`".$this->table['key']."`='".$temp['id']."'");
+        }
+        HTTP::redirect(str_replace('&amp;', '&', Eresus_Kernel::app()->getPage()->url()));
+    }
+
+    /**
+     * @return string
+     */
+    private	function parentClientRenderContent()
+    {
+        $result = '';
+        if (!isset($this->settings['itemsPerPage']))
+        {
+            $this->settings['itemsPerPage'] = 0;
+        }
+        if (Eresus_Kernel::app()->getPage()->topic)
+        {
+            $result = $this->clientRenderItem();
+        }
+        else
+        {
+            $this->table['fields'] = Eresus_CMS::getLegacyKernel()->db->fields($this->table['name']);
+            $this->itemsCount = Eresus_CMS::getLegacyKernel()->db->
+                count($this->table['name'], "(`section`='" . Eresus_Kernel::app()->getPage()->id."')".
+                    (in_array('active', $this->table['fields'])?"AND(`active`='1')":''));
+            if ($this->itemsCount)
+            {
+                $this->pagesCount = $this->settings['itemsPerPage'] ?
+                    ((integer) ($this->itemsCount / $this->settings['itemsPerPage']) +
+                        (($this->itemsCount % $this->settings['itemsPerPage']) > 0)):1;
+            }
+            if (!Eresus_Kernel::app()->getPage()->subpage)
+            {
+                Eresus_Kernel::app()->getPage()->subpage = $this->table['sortDesc']?$this->pagesCount:1;
+            }
+            if ($this->itemsCount && (Eresus_Kernel::app()->getPage()->subpage > $this->pagesCount))
+            {
+                $item = Eresus_Kernel::app()->getPage()->httpError(404);
+                $result = $item['content'];
+            }
+            else
+            {
+                $result .= $this->clientRenderList();
+            }
+        }
+        return $result;
+    }
+
+    private function clientRenderPages()
+    {
+        $result = Eresus_Kernel::app()->getPage()->
+            pages($this->pagesCount, $this->settings['itemsPerPage'], $this->table['sortDesc']);
+        return $result;
     }
 }
 

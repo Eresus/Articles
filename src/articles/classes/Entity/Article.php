@@ -94,6 +94,19 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
     }
 
     /**
+     * Дополнительные действия при удалении
+     *
+     * @since 3.01
+     */
+    public function afterDelete()
+    {
+        $filename = Eresus_Kernel::app()->getFsRoot() . '/data/' . $this->plugin->name .
+            '/' . $this->id;
+        unlink($filename . '.jpg');
+        unlink($filename . '-thmb.jpg');
+    }
+
+    /**
      * Автоматически заполняет свойство $preview на основе свойства $text
      *
      * @since 3.01
