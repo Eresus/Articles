@@ -1,0 +1,7 @@
+<ul>
+    {foreach $articles article}
+    <li class="article">
+        <a href="{$article->clientUrl}" class="link article__link">{$article->caption}</a>
+    </li>
+    {/foreach}
+</ul>

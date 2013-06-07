@@ -63,7 +63,7 @@ class Articles extends ContentPlugin
      * Требуемая версия ядра
      * @var string
      */
-    public $kernel = '3.00b';
+    public $kernel = '3.01a';
 
     /**
      * Название плагина
@@ -89,31 +89,6 @@ class Articles extends ContentPlugin
      */
     public $settings = array(
         'itemsPerPage' => 10,
-        'tmplList' => '
-			<h1>$(title)</h1>
-			$(content)
-			$(items)
-		',
-        'tmplListItem' => '
-			<div class="ArticlesListItem">
-				<h3>$(caption)</h3>
-				$(posted)<br />
-				<img src="$(thumbUrl)" alt="$(caption)" width="$(thumbWidth)" height="$(thumbHeight)" />
-				$(preview)
-				<div class="controls">
-					<a href="$(clientUrl)">Полный текст...</a>
-				</div>
-			</div>
-		',
-        'tmplItem' => '
-			<div class="ArticlesItem">
-				<h1>$(caption)</h1><b>$(posted)</b><br />
-				<img src="$(imageUrl)" alt="$(caption)" width="$(imageWidth)" height="$(imageHeight)" style="float: left;" />
-				$(text)
-				<br /><br />
-			</div>
-		',
-        'tmplBlockItem' => '<b>$(posted)</b><br /><a href="$(link)">$(caption)</a><br />',
         'previewMaxSize' => 500,
         'previewSmartSplit' => true,
         'listSortMode' => 'posted',
@@ -313,24 +288,26 @@ class Articles extends ContentPlugin
             'caption' => $this->title.' '.$this->version,
             'width' => '500px',
             'fields' => array (
-                array('type'=>'hidden','name'=>'update', 'value'=>$this->name),
-                array('type'=>'text','value'=>
-                'Для вставки блока статей используйте макрос <b>$(ArticlesBlock)</b><br />'),
-                array('type'=>'header','value'=>'Параметры полнотекстового просмотра'),
-                array('type'=>'memo','name'=>'tmplItem','label'=>'Шаблон полнотекстового просмотра',
-                    'height'=>'5'),
+                array('type' => 'hidden', 'name' => 'update', 'value' => $this->getName()),
+                array('type' => 'text', 'value' =>
+                    'Для вставки блока статей используйте макрос <b>$(ArticlesBlock)</b><br>'),
+                array('type' => 'header', 'value' => 'Параметры полнотекстового просмотра'),
+                array('type' => 'memo', 'name' => 'tmplItem',
+                    'label' => 'Шаблон полнотекстового просмотра', 'height'=>'5',
+                    'value' => $this->templates()->clientRead('Article.html')),
                 array('type'=>'header', 'value' => 'Параметры списка'),
-                array('type'=>'edit','name'=>'itemsPerPage','label'=>'Статей на страницу','width'=>'50px',
+                array('type'=>'edit','name'=>'itemsPerPage','label'=>'Статей на страницу',
+                    'width'=>'50px',
                     'maxlength'=>'2'),
-                array('type'=>'memo','name'=>'tmplList','label'=>'Шаблон списка','height'=>'3'),
-                array('type'=>'text','value'=>'
+                array('type' => 'memo', 'name' => 'tmplList', 'label' => 'Шаблон списка статей',
+                    'height' => '10',
+                    'value' => $this->templates()->clientRead('List.html')),
+                array('type' => 'text', 'value' => '
 					Макросы:<br />
 					<strong>$(title)</strong> - заголовок страницы,<br />
 					<strong>$(content)</strong> - контент страницы,<br />
 					<strong>$(items)</strong> - список статей
 				'),
-                array('type'=>'memo','name'=>'tmplListItem','label'=>'Шаблон элемента списка',
-                    'height'=>'5'),
                 array('type'=>'select','name'=>'listSortMode','label'=>'Сортировка',
                     'values' => array('posted', 'position'),
                     'items' => array('По дате добавления', 'Ручная')),
@@ -340,7 +317,7 @@ class Articles extends ContentPlugin
                     'values' => array(self::BLOCK_NONE, self::BLOCK_LAST, self::BLOCK_MANUAL),
                     'items' => array('Отключить','Последние статьи','Избранные статьи')),
                 array('type'=>'memo','name'=>'tmplBlockItem','label'=>'Шаблон элемента блока',
-                    'height'=>'3'),
+                    'height'=>'3', 'value' => $this->templates()->clientRead('Block.html')),
                 array('type'=>'edit','name'=>'blockCount','label'=>'Количество', 'width'=>'50px'),
                 array('type'=>'header', 'value' => 'Краткое описание'),
                 array('type'=>'edit','name'=>'previewMaxSize','label'=>'Макс. размер описания',
@@ -377,117 +354,23 @@ class Articles extends ContentPlugin
     }
 
     /**
+     * Дополнительные действия при сохранении настроек
+     */
+    public function onSettingsUpdate()
+    {
+        parent::onSettingsUpdate();
+        $this->templates()->clientWrite('List.html', arg('tmplList'));
+    }
+
+    /**
      * Формирование контента
      *
      * @return string
      */
     public function clientRenderContent()
     {
-        $this->clientCheckUrl();
-
-        /** @var TClientUI $page */
-        $page = Eresus_Kernel::app()->getPage();
-
-        if (!is_numeric($this->settings['itemsPerPage']))
-        {
-            $this->settings['itemsPerPage'] = 0;
-        }
-        if ($page->topic)
-        {
-            $html = $this->clientRenderItem();
-        }
-        else
-        {
-            $html = $this->clientRenderList();
-        }
-        return $html;
-    }
-
-    /**
-     * Отрисовка списка статей
-     *
-     * @return string
-     */
-    public function clientRenderList()
-    {
-        /** @var TClientUI $page */
-        $page = Eresus_Kernel::app()->getPage();
-        /** @var Articles_Entity_Table_Article $table */
-        $perPage = $this->settings['itemsPerPage'];
-        $table = ORM::getTable($this, 'Article');
-        $totalPageCount = ceil($table->countInSection($page->id) / $perPage);
-
-        if (0 == $page->subpage)
-        {
-            $page->subpage = 1;
-        }
-        if ($page->subpage > $totalPageCount)
-        {
-            $page->httpError(404);
-        }
-
-        $items = '';
-        /** @var Articles_Entity_Article[] $articles */
-        $articles = $table->findInSection($page->id, $perPage, ($page->subpage - 1) * $perPage);
-        if (count($articles))
-        {
-            foreach ($articles as $article)
-            {
-                $items .= $article->render($this->settings['tmplListItem']);
-            }
-            if ($totalPageCount > 1)
-            {
-                $pager = new PaginationHelper($totalPageCount, $page->subpage);
-                $items .= $pager->render();
-            }
-        }
-
-        $vars = array(
-            'items' => $items,
-            'title' => $page->title,
-            'content' => $page->content,
-        );
-
-        $html = parent::replaceMacros($this->settings['tmplList'], $vars);
-
-        return $html;
-    }
-
-    /**
-     * Отрисовка статьи
-     *
-     * @return string
-     */
-    public function clientRenderItem()
-    {
-        /** @var TClientUI $page */
-        $page = Eresus_Kernel::app()->getPage();
-        /** @var Articles_Entity_Article $article */
-        $article = ORM::getTable($this, 'Article')->find($page->topic);
-        if (null === $article || false === $article->active)
-        {
-            $page->httpError(404);
-        }
-
-        $page->section []= $article->caption;
-
-        $pathItem = array(
-            'access' => $page->access,
-            'name' => $article->id,
-            'title' => $article->caption,
-            'hint' => '',
-            'description' => '',
-            'keywords' => '',
-        );
-        $address = explode('/', Eresus_Kernel::app()->getLegacyKernel()->request['path']);
-        $address = array_slice($address, 3);
-        $url = implode('/', $address);
-        $url .= $pathItem['name'] . '/';
-        Eresus_Kernel::app()->getLegacyKernel()->plugins->clientOnURLSplit($pathItem, $url);
-
-        $html = $article->render($this->settings['tmplItem']);
-        $html = $this->replaceMacros($html, array());
-        return $html;
+        $controller = new Articles_Controller_Client_Content($this);
+        return $controller->actionContent();
     }
 
     /**
@@ -764,11 +647,13 @@ class Articles extends ContentPlugin
         }
         /** @var Articles_Entity_Article[] $articles */
         $articles = $table->loadFromQuery($q, $this->settings['blockCount']);
-        $html = '';
-        foreach ($articles as $article)
-        {
-            $html .= $article->render($this->settings['tmplBlockItem']);
-        }
+
+        $vars = array(
+            'settings' => $this->settings,
+            'articles' => $articles,
+        );
+        $tmpl = $this->templates()->client('Block.html');
+        $html = $tmpl->compile($vars);
         return $html;
     }
 
@@ -816,37 +701,6 @@ class Articles extends ContentPlugin
         $helper->groupBy('section');
         $helper->moveDown($article);
         HTTP::redirect(Eresus_Kernel::app()->getPage()->url());
-    }
-
-    /**
-     * Проверяет URL на «существование»
-     *
-     * @since 3.01
-     */
-    private function clientCheckUrl()
-    {
-        $legacyKernel = Eresus_CMS::getLegacyKernel();
-        /** @var TClientUI $page */
-        $page = Eresus_Kernel::app()->getPage();
-        if ($page->topic)
-        {
-            $acceptUrl = $legacyKernel->request['path'] .
-                ($page->subpage !== 0 ? 'p' . $page->subpage . '/' : '') .
-                ($page->topic !== false ? $page->topic . '/' : '');
-            if ($acceptUrl != $legacyKernel->request['url'])
-            {
-                $page->httpError(404);
-            }
-        }
-        else
-        {
-            $acceptUrl = $legacyKernel->request['path'] .
-                ($page->subpage !== 0 ? 'p' . $page->subpage . '/' : '');
-            if ($acceptUrl != $legacyKernel->request['url'])
-            {
-                $page->httpError(404);
-            }
-        }
     }
 }
 
