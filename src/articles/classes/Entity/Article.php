@@ -103,7 +103,6 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
         {
             $filename = Eresus_Kernel::app()->getFsRoot() . '/data/' . $this->plugin->name .
                 '/' . $this->id;
-            useLib('glib');
             thumbnail($this->tmpFile, $filename . '.jpg', $this->plugin->settings['imageWidth'],
                 $this->plugin->settings['imageHeight'], $this->plugin->settings['imageColor']);
             thumbnail($this->tmpFile, $filename . '-thmb.jpg',

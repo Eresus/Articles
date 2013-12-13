@@ -168,7 +168,8 @@ class Articles extends ContentPlugin
     public function install()
     {
         parent::install();
-        ORM::getTable($this, 'Article')->create();
+        $driver = ORM::getManager()->getDriver();
+        $driver->createTable(ORM::getTable($this, 'Article'));
         $this->mkdir();
     }
 
@@ -180,7 +181,8 @@ class Articles extends ContentPlugin
     public function uninstall()
     {
         $this->rmdir();
-        ORM::getTable($this, 'Article')->drop();
+        $driver = ORM::getManager()->getDriver();
+        $driver->dropTable(ORM::getTable($this, 'Article'));
         parent::uninstall();
     }
 
