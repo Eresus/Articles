@@ -42,14 +42,11 @@ class Articles_Controller_Client_Content extends Eresus_Plugin_Controller_Client
     {
         $this->checkUrl();
 
-        /** @var TClientUI $page */
-        $page = Eresus_Kernel::app()->getPage();
-
         if (!is_numeric($this->getPlugin()->settings['itemsPerPage']))
         {
             $this->getPlugin()->settings['itemsPerPage'] = 0;
         }
-        if ($page->topic)
+        if ($this->getPage()->topic)
         {
             $html = $this->actionView();
         }
@@ -68,25 +65,23 @@ class Articles_Controller_Client_Content extends Eresus_Plugin_Controller_Client
     private function checkUrl()
     {
         $legacyKernel = Eresus_CMS::getLegacyKernel();
-        /** @var TClientUI $page */
-        $page = Eresus_Kernel::app()->getPage();
-        if ($page->topic)
+        if ($this->getPage()->topic)
         {
             $acceptUrl = $legacyKernel->request['path'] .
-                ($page->subpage !== 0 ? 'p' . $page->subpage . '/' : '') .
-                ($page->topic !== false ? $page->topic . '/' : '');
+                ($this->getPage()->subpage !== 0 ? 'p' . $this->getPage()->subpage . '/' : '') .
+                ($this->getPage()->topic !== false ? $this->getPage()->topic . '/' : '');
             if ($acceptUrl != $legacyKernel->request['url'])
             {
-                $page->httpError(404);
+                $this->getPage()->httpError(404);
             }
         }
         else
         {
             $acceptUrl = $legacyKernel->request['path'] .
-                ($page->subpage !== 0 ? 'p' . $page->subpage . '/' : '');
+                ($this->getPage()->subpage !== 0 ? 'p' . $this->getPage()->subpage . '/' : '');
             if ($acceptUrl != $legacyKernel->request['url'])
             {
-                $page->httpError(404);
+                $this->getPage()->httpError(404);
             }
         }
     }
@@ -102,26 +97,25 @@ class Articles_Controller_Client_Content extends Eresus_Plugin_Controller_Client
      */
     private function actionIndex()
     {
-        /** @var TClientUI $page */
-        $page = Eresus_Kernel::app()->getPage();
         /** @var Articles_Entity_Table_Article $table */
         $perPage = $this->getPlugin()->settings['itemsPerPage'];
         $table = ORM::getTable($this->getPlugin(), 'Article');
-        $totalPageCount = ceil($table->countInSection($page->id) / $perPage);
+        $totalPageCount = ceil($table->countInSection($this->getPage()->id) / $perPage);
 
-        if (0 == $page->subpage)
+        if (0 == $this->getPage()->subpage)
         {
-            $page->subpage = 1;
+            $this->getPage()->subpage = 1;
         }
-        if ($page->subpage > $totalPageCount)
+        if ($this->getPage()->subpage > $totalPageCount)
         {
             throw new Eresus_CMS_Exception_NotFound;
         }
 
-        $articles = $table->findInSection($page->id, $perPage, ($page->subpage - 1) * $perPage);
+        $articles = $table->findInSection($this->getPage()->id, $perPage,
+            ($this->getPage()->subpage - 1) * $perPage);
         if (count($articles) && $totalPageCount > 1)
         {
-            $pager = new PaginationHelper($totalPageCount, $page->subpage);
+            $pager = new PaginationHelper($totalPageCount, $this->getPage()->subpage);
         }
         else
         {
@@ -130,7 +124,7 @@ class Articles_Controller_Client_Content extends Eresus_Plugin_Controller_Client
 
         $vars = array(
             'settings' => $this->getPlugin()->settings,
-            'page' => $page,
+            'page' => $this->getPage(),
             'articles' => $articles,
             'pager' => $pager
         );
@@ -150,22 +144,20 @@ class Articles_Controller_Client_Content extends Eresus_Plugin_Controller_Client
      */
     private function actionView()
     {
-        /** @var TClientUI $page */
-        $page = Eresus_Kernel::app()->getPage();
         /** @var Articles_Entity_Article $article */
-        $article = ORM::getTable($this->getPlugin(), 'Article')->find($page->topic);
+        $article = ORM::getTable($this->getPlugin(), 'Article')->find($this->getPage()->topic);
         if (null === $article || false === $article->active)
         {
-            $page->httpError(404);
+            $this->getPage()->httpError(404);
         }
 
-        $page->section []= $article->caption;
+        $this->getPage()->section []= $article->caption;
 
         $this->addToPath($article);
 
         $vars = array(
             'settings' => $this->getPlugin()->settings,
-            'page' => $page,
+            'page' => $this->getPage(),
             'article' => $article,
         );
         $tmpl = $this->getPlugin()->templates()->client('Article.html');
@@ -182,10 +174,8 @@ class Articles_Controller_Client_Content extends Eresus_Plugin_Controller_Client
      */
     private function addToPath($article)
     {
-        /** @var TClientUI $page */
-        $page = Eresus_Kernel::app()->getPage();
         $pathItem = array(
-            'access' => $page->access,
+            'access' => $this->getPage()->access,
             'name' => $article->id,
             'title' => $article->caption,
             'hint' => '',

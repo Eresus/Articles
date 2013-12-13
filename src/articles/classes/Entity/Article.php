@@ -101,13 +101,16 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
         if ($this->tmpFile)
         /* Если был загружен новый файл… */
         {
-            $filename = Eresus_Kernel::app()->getFsRoot() . '/data/' . $this->plugin->name .
-                '/' . $this->id;
-            thumbnail($this->tmpFile, $filename . '.jpg', $this->plugin->settings['imageWidth'],
-                $this->plugin->settings['imageHeight'], $this->plugin->settings['imageColor']);
+            /** @var Articles $plugin */
+            $plugin = $this->getTable()->getPlugin();
+            $filename = Eresus_Kernel::app()->getFsRoot() . '/data/' . $plugin->getName() . '/'
+                . $this->id;
+            $settings = $plugin->settings;
+            thumbnail($this->tmpFile, $filename . '.jpg', $settings['imageWidth'],
+                $settings['imageHeight'], $settings['imageColor']);
             thumbnail($this->tmpFile, $filename . '-thmb.jpg',
-                $this->plugin->settings['THimageWidth'], $this->plugin->settings['THimageHeight'],
-                $this->plugin->settings['imageColor']);
+                $settings['THimageWidth'], $settings['THimageHeight'],
+                $settings['imageColor']);
             unlink($this->tmpFile);
         }
     }
@@ -119,7 +122,9 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
      */
     public function afterDelete()
     {
-        $filename = Eresus_Kernel::app()->getFsRoot() . '/data/' . $this->plugin->name .
+        /** @var Articles $plugin */
+        $plugin = $this->getTable()->getPlugin();
+        $filename = Eresus_Kernel::app()->getFsRoot() . '/data/' . $plugin->getName() .
             '/' . $this->id;
         unlink($filename . '.jpg');
         unlink($filename . '-thmb.jpg');
@@ -137,20 +142,23 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
         $preview = str_replace(array("\n", "\r"), ' ', $preview);
         $preview = preg_replace('/\s{2,}/U', ' ', $preview);
 
-        if (!$this->plugin->settings['previewMaxSize'])
+        /** @var Articles $plugin */
+        $plugin = $this->getTable()->getPlugin();
+        $settings = $plugin->settings;
+        if (!$settings['previewMaxSize'])
         {
-            $this->plugin->settings['previewMaxSize'] = 500;
+            $settings['previewMaxSize'] = 500;
         }
 
-        if ($this->plugin->settings['previewSmartSplit'])
+        if ($settings['previewSmartSplit'])
         {
-            preg_match("/\A(.{1," . $this->plugin->settings['previewMaxSize'] .
+            preg_match("/\A(.{1," . $settings['previewMaxSize'] .
                 "})(\.\s|\.|\Z)/Us", $preview, $result);
             $preview = $result[1];
         }
         else
         {
-            $preview = mb_substr($preview, 0, $this->plugin->settings['previewMaxSize']);
+            $preview = mb_substr($preview, 0, $settings['previewMaxSize']);
         }
         if (mb_strlen($preview) < mb_strlen($this->text))
         {
@@ -244,7 +252,7 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
      */
     protected function setCaption($caption)
     {
-        $this->setProperty('caption', strip_tags(htmlspecialchars($caption)));
+        $this->setPdoValue('caption', strip_tags(htmlspecialchars($caption)));
     }
 
     /**
@@ -258,16 +266,18 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
      */
     protected function setImage($value)
     {
+        /** @var Articles $plugin */
+        $plugin = $this->getTable()->getPlugin();
         if (null === $value && $this->imageUrl)
         {
             $root = Eresus_Kernel::app()->getLegacyKernel()->fdata;
-            @unlink($root . $this->plugin->name . '/' . $this->id . '.jpg');
-            @unlink($root . $this->plugin->name . '/' . $this->id . '-thmb.jpg');
+            @unlink($root . $plugin->getName() . '/' . $this->id . '.jpg');
+            @unlink($root . $plugin->getName() . '/' . $this->id . '-thmb.jpg');
         }
         elseif (is_uploaded_file($_FILES[$value]['tmp_name']))
         {
             $this->tmpFile = upload('image',
-                tempnam(Eresus_Kernel::app()->getFsRoot() . 'var', $this->plugin->name));
+                tempnam(Eresus_Kernel::app()->getFsRoot() . 'var', $plugin->getName()));
         }
     }
 
@@ -280,7 +290,9 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
      */
     protected function getImageUrl()
     {
-        $localPart = $this->plugin->name . '/' . $this->id . '.jpg';
+        /** @var Articles $plugin */
+        $plugin = $this->getTable()->getPlugin();
+        $localPart = $plugin->getName() . '/' . $this->id . '.jpg';
         if (file_exists(Eresus_Kernel::app()->getLegacyKernel()->fdata . $localPart))
         {
             return Eresus_Kernel::app()->getLegacyKernel()->data . $localPart;
@@ -297,7 +309,9 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
      */
     protected function getThumbUrl()
     {
-        $localPart = $this->plugin->name . '/' . $this->id . '-thmb.jpg';
+        /** @var Articles $plugin */
+        $plugin = $this->getTable()->getPlugin();
+        $localPart = $plugin->getName() . '/' . $this->id . '-thmb.jpg';
         if (file_exists(Eresus_Kernel::app()->getLegacyKernel()->fdata . $localPart))
         {
             return Eresus_Kernel::app()->getLegacyKernel()->data . $localPart;

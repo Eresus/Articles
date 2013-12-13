@@ -58,7 +58,7 @@ class Articles_Entity_Table_Article extends ORM_Table
                 'unsigned' => true,
             ),
             'posted' => array(
-                'type' => 'timestamp',
+                'type' => 'datetime',
             ),
             'block' => array(
                 'type' => 'boolean',
@@ -75,8 +75,10 @@ class Articles_Entity_Table_Article extends ORM_Table
                 'type' => 'string',
             )
         ));
-        $this->setOrdering($this->plugin->settings['listSortMode'],
-            $this->plugin->settings['listSortDesc'] ? ezcQuerySelect::DESC : ezcQuerySelect::ASC);
+        $this->setOrdering($this->getPlugin()->settings['listSortMode'],
+            $this->getPlugin()->settings['listSortDesc']
+                ? ezcQuerySelect::DESC
+                : ezcQuerySelect::ASC);
         $this->index('admin_idx', array('fields' => array('section', 'position')));
         $this->index('cl_position_idx', array('fields' => array('section', 'active', 'position')));
         $this->index('cl_date_idx', array('fields' => array('section', 'active', 'posted')));

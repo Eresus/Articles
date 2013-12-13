@@ -107,7 +107,7 @@ class Articles extends ContentPlugin
      * @var array
      * @todo устарело, удалить после рефакторинга
      */
-    private $table = array (
+    public $table = array (
         'name' => 'articles',
         'key'=> 'id',
         'sortMode' => 'posted',
@@ -220,24 +220,16 @@ class Articles extends ContentPlugin
      */
     public function adminRenderContent()
     {
+        $controller = new Articles_Controller_Admin_Content($this);
         $html = '';
         switch (arg('action'))
         {
             case 'properties':
                 $html = $this->actionAdminProperties();
                 break;
-            case 'add':
-                $html = $this->actionAdminAdd();
-                break;
             default:
                 switch (true)
                 {
-                    case !is_null(arg('id')):
-                        $html = $this->actionAdminEdit();
-                        break;
-                    case !is_null(arg('toggle')):
-                        $this->actionAdminToggle(arg('toggle'));
-                        break;
                     case !is_null(arg('delete')):
                         $this->actionAdminDelete(arg('delete'));
                         break;
@@ -257,7 +249,7 @@ class Articles extends ContentPlugin
                         }
                         break;
                     default:
-                        $html = $this->actionAdminList();
+                        $html = $controller->actionContent();
                 }
         }
         /** @var TAdminUI $page */
@@ -267,7 +259,7 @@ class Articles extends ContentPlugin
             'items' => array(
                 'create' => array('caption' => 'Добавить статью', 'name'=>'action',
                     'value' => 'add'),
-                'list' => array('caption' => 'Список статей'),
+                'list' => array('caption' => 'Список статей', 'name' => 'id', 'value' => false),
                 'text' => array('caption' => 'Текст на странице', 'name' => 'action',
                     'value' => 'properties'),
             ),
@@ -389,33 +381,6 @@ class Articles extends ContentPlugin
     }
 
     /**
-     * Возвращает разметку списка статей
-     *
-     * @return string
-     *
-     * @since 3.01
-     */
-    private function actionAdminList()
-    {
-        /** @var Articles_Entity_Table_Article $table */
-        $table = ORM::getTable($this, 'Article');
-        /** @var TAdminUI $page */
-        $page = Eresus_Kernel::app()->getPage();
-        $perPage = $this->settings['itemsPerPage'];
-        $currentPage = arg('pg') ?: 1;
-        $articles = $table->findInSection($page->id, $perPage, ($currentPage - 1) * $perPage, true);
-
-        $pageCount = ceil($table->countInSection($page->id, true) / $perPage);
-        $urlTemplate = $page->url(array('pg' => '%d'));
-        $pager = new PaginationHelper($pageCount, $currentPage, $urlTemplate);
-
-        $html =
-            $page->renderTable($this->table, $articles) .
-            $pager->render();
-        return $html;
-    }
-
-    /**
      * Изменение свойств раздела
      *
      * @return string
@@ -451,166 +416,6 @@ class Articles extends ContentPlugin
 
         $html = $page->renderForm($form, $section);
         return $html;
-    }
-
-    /**
-     * Диалог добавления статьи
-     *
-     * @return string  разметка области контента
-     */
-    private function actionAdminAdd()
-    {
-        $legacyEresus = Eresus_CMS::getLegacyKernel();
-
-        if ('POST' == $legacyEresus->request['method'])
-        {
-            $article = new Articles_Entity_Article($this);
-            $article->section = arg('section', 'int');
-            $article->active = true;
-            $article->posted = new DateTime();
-            $article->block = (boolean) arg('block', 'int');
-            $article->caption = arg('caption');
-            $article->text = arg('text');
-            $article->preview = arg('preview');
-            $article->image = 'image';
-            $article->getTable()->persist($article);
-            HTTP::redirect(arg('submitURL'));
-        }
-
-        $form = array(
-            'name' => 'newArticles',
-            'caption' => 'Добавить статью',
-            'width' => '95%',
-            'fields' => array (
-                array ('type' => 'hidden', 'name' => 'action', 'value' => 'add'),
-                array ('type' => 'hidden', 'name' => 'section', 'value' => arg('section')),
-                array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок',
-                    'width' => '100%', 'maxlength' => '255'),
-                array ('type' => 'html', 'name' => 'text', 'label' => 'Полный текст',
-                    'height' => '200px'),
-                array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание',
-                    'height' => '10'),
-                array ('type' =>
-                $this->settings['blockMode'] == self::BLOCK_MANUAL ? 'checkbox' : 'hidden',
-                    'name' => 'block', 'label' => 'Показывать в блоке'),
-                array ('type' => 'file', 'name' => 'image', 'label' => 'Картинка',
-                    'width' => '100'),
-            ),
-            'buttons' => array('ok', 'cancel'),
-        );
-
-        /** @var TAdminUI $page */
-        $page = Eresus_Kernel::app()->getPage();
-        $html = $page->renderForm($form);
-        return $html;
-    }
-
-    /**
-     * Диалог изменения статьи
-     *
-     * @throws Exception
-     *
-     * @return string
-     */
-    private function actionAdminEdit()
-    {
-        /** @var Articles_Entity_Article $article */
-        $article = ORM::getTable($this, 'Article')->find(arg('id'));
-        if (null === $article)
-        {
-            throw new Exception('Запрошенная статья не найдена');
-        }
-
-        $legacyEresus = Eresus_CMS::getLegacyKernel();
-
-        if ('POST' == $legacyEresus->request['method'])
-        {
-            $article->image = 'image';
-            $article->section = arg('section', 'int');
-            if (!is_null(arg('active')))
-            {
-                $article->active = (boolean) arg('active', 'int');
-            }
-            $article->posted = new DateTime(arg('posted'));
-            $article->block = (boolean) arg('block', 'int');
-            $article->caption = arg('caption');
-            $article->text = arg('text');
-            $article->preview = arg('preview');
-            if (arg('updatePreview'))
-            {
-                $article->createPreviewFromText();
-            }
-            $article->getTable()->update($article);
-
-            HTTP::redirect(arg('submitURL'));
-        }
-
-        /** @var TAdminUI $page */
-        $page = Eresus_Kernel::app()->getPage();
-
-        if (arg('action', 'word') == 'delimage')
-        {
-            $article->image = null;
-            HTTP::redirect($page->url());
-        }
-
-        $form = array(
-            'name' => 'editArticles',
-            'caption' => 'Изменить статью',
-            'width' => '95%',
-            'fields' => array (
-                array('type' => 'hidden', 'name' => 'id', 'value' => $article->id),
-                array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок',
-                    'width' => '100%', 'maxlength' => '255'),
-                array ('type' => 'html', 'name' => 'text', 'label' => 'Полный текст',
-                    'height' => '200px'),
-                array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание',
-                    'height' => '5'),
-                array ('type' => 'checkbox', 'name'=>'updatePreview',
-                    'label'=>'Обновить краткое описание автоматически', 'value' => false),
-                array ('type' => $this->settings['blockMode'] == self::BLOCK_MANUAL
-                    ? 'checkbox' : 'hidden', 'name' => 'block', 'label' => 'Показывать в блоке'),
-                array ('type' => 'file', 'name' => 'image', 'label' => 'Картинка', 'width' => '100',
-                    'comment' => $article->imageUrl ?
-                        '<a href="' . $page->url(array('action'=>'delimage')) . '">Удалить</a>'  : ''),
-                array ('type' => 'divider'),
-                array ('type' => 'edit', 'name' => 'section', 'label' => 'Раздел',
-                    'access' => ADMIN),
-                array ('type' => 'edit', 'name'=>'posted', 'label'=>'Написано'),
-                array ('type' => 'checkbox', 'name'=>'active', 'label'=>'Активно'),
-                array ('type' => 'text', 'value' => $article->imageUrl
-                    ? 'Изображение: <br><img src="' . $article->thumbUrl . '" alt="">' : ''),
-            ),
-            'buttons' => array('ok', 'apply', 'cancel'),
-        );
-        /** @var array $article */
-        $html = $page->renderForm($form, $article);
-
-        return $html;
-    }
-
-    /**
-     * Переключает активность статьи
-     *
-     * @param int $id  ID статьи
-     *
-     * @throws Exception
-     *
-     * @return void
-     */
-    private function actionAdminToggle($id)
-    {
-        /** @var Articles_Entity_Article $article */
-        $article = ORM::getTable($this, 'Article')->find($id);
-        if (null === $article)
-        {
-            throw new Exception('Запрошенная статья не найдена');
-        }
-        $article->active = !$article->active;
-        $article->getTable()->update($article);
-
-        $page = Eresus_Kernel::app()->getPage();
-        HTTP::redirect(str_replace('&amp;', '&', $page->url()));
     }
 
     /**
