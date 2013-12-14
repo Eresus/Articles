@@ -58,11 +58,13 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
      *
      * @param ezcQuery $query
      *
+     * @return ezcQuery
+     *
      * @since 3.01
      */
     public function beforeSave(ezcQuery $query)
     {
-        parent::beforeSave($query);
+        $query = parent::beforeSave($query);
 
         /*
          * Если это новая статья — вычисляем новый порядковый номер
@@ -78,17 +80,18 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
             $max = $this->getTable()->loadOneFromQuery($q);
             $query->set('position',
                 $query->bindValue($max->position + 1, ":position", PDO::PARAM_INT));
+            /*
+             * Обновляем краткое описание, если надо
+             */
+            if (!$this->preview)
+            {
+                $this->createPreviewFromText();
+                /** @var ezcQueryInsert|ezcQueryUpdate $query */
+                $query->set('preview', $query->bindValue($this->preview, ':preview'));
+            }
         }
 
-        /*
-         * Обновляем краткое описание, если надо
-         */
-        if ('' === $this->preview)
-        {
-            $this->createPreviewFromText();
-            /** @var ezcQueryInsert|ezcQueryUpdate $query */
-            $query->set('preview', $query->bindValue($this->preview, ":preview", PDO::PARAM_STR));
-        }
+        return $query;
     }
 
     /**
