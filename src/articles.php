@@ -286,7 +286,7 @@ class Articles extends ContentPlugin
                 array('type' => 'text', 'value' =>
                     'Для вставки блока статей используйте макрос <b>$(ArticlesBlock)</b><br>'),
                 array('type' => 'header', 'value' => 'Параметры полнотекстового просмотра'),
-                array('type' => 'memo', 'name' => 'tmplItem',
+                array('type' => 'memo', 'name' => 'tmplArticle',
                     'label' => 'Шаблон полнотекстового просмотра', 'height'=>'5',
                     'value' => $this->templates()->clientRead('Article.html')),
                 array('type'=>'header', 'value' => 'Параметры списка'),
@@ -310,7 +310,7 @@ class Articles extends ContentPlugin
                 array('type'=>'select','name'=>'blockMode','label'=>'Режим блока статей',
                     'values' => array(self::BLOCK_NONE, self::BLOCK_LAST, self::BLOCK_MANUAL),
                     'items' => array('Отключить','Последние статьи','Избранные статьи')),
-                array('type'=>'memo','name'=>'tmplBlockItem','label'=>'Шаблон элемента блока',
+                array('type'=>'memo','name'=>'tmplBlock','label'=>'Шаблон элемента блока',
                     'height'=>'3', 'value' => $this->templates()->clientRead('Block.html')),
                 array('type'=>'edit','name'=>'blockCount','label'=>'Количество', 'width'=>'50px'),
                 array('type'=>'header', 'value' => 'Краткое описание'),
@@ -353,6 +353,8 @@ class Articles extends ContentPlugin
     public function onSettingsUpdate()
     {
         parent::onSettingsUpdate();
+        $this->templates()->clientWrite('Article.html', arg('tmplArticle'));
+        $this->templates()->clientWrite('Block.html', arg('tmplBlock'));
         $this->templates()->clientWrite('List.html', arg('tmplList'));
     }
 
