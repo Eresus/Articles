@@ -101,6 +101,10 @@ class Articles_Controller_Client_Content extends Eresus_Plugin_Controller_Client
         $perPage = $this->getPlugin()->settings['itemsPerPage'];
         $table = ORM::getTable($this->getPlugin(), 'Article');
         $totalPageCount = ceil($table->countInSection($this->getPage()->id) / $perPage);
+        if (0 == $totalPageCount)
+        {
+            $totalPageCount = 1;
+        }
 
         if (0 == $this->getPage()->subpage)
         {
