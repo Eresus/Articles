@@ -259,7 +259,7 @@ class Articles extends ContentPlugin
             'items' => array(
                 'create' => array('caption' => 'Добавить статью', 'name'=>'action',
                     'value' => 'add'),
-                'list' => array('caption' => 'Список статей', 'name' => 'id', 'value' => false),
+                'list' => array('caption' => 'Список статей'),
                 'text' => array('caption' => 'Текст на странице', 'name' => 'action',
                     'value' => 'properties'),
             ),
