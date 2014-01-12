@@ -85,16 +85,6 @@ class Articles extends ContentPlugin
     );
 
     /**
-     * Таблица списка объектов
-     * @var array
-     * @todo устарело, удалить после рефакторинга
-     */
-    public $table = array (
-        'sortMode' => 'posted',
-        'sortDesc' => true,
-    );
-
-    /**
      * Конструктор
      *
      * Производит регистрацию обработчиков событий

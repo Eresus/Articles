@@ -48,7 +48,7 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
 
         $table = ORM::getTable($this->getPlugin(), 'Article');
         $provider = new ORM_UI_List_DataProvider($table);
-        $provider->orderBy($plugin->table['sortMode'], $plugin->table['sortDesc']);
+        $provider->orderBy($plugin->settings['listSortMode'], $plugin->settings['listSortDesc']);
 
         $list = new UI_List($this->getPlugin(), $provider);
         $list->setPageSize($this->getPlugin()->settings['itemsPerPage']);
@@ -254,7 +254,7 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
 
         /** @var Articles $plugin */
         $plugin = $this->getPlugin();
-        if ($plugin->table['sortDesc'])
+        if ($plugin->settings['listSortDesc'])
         {
             $helper->moveDown($article);
         }
@@ -282,7 +282,7 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
         $helper->groupBy('section');
         /** @var Articles $plugin */
         $plugin = $this->getPlugin();
-        if ($plugin->table['sortDesc'])
+        if ($plugin->settings['listSortDesc'])
         {
             $helper->moveUp($article);
         }
