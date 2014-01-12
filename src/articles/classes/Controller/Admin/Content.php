@@ -33,18 +33,6 @@
 class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_Content
 {
     /**
-     * Возвращает разметку области контента
-     *
-     * @return string|Eresus_HTTP_Response
-     * @since 3.01
-     */
-    public function actionContent(Eresus_CMS_Request $request)
-    {
-        $response = $this->getHtml($request);
-        return $response;
-    }
-
-    /**
      * Возвращает разметку списка статей
      *
      * @param Eresus_CMS_Request $request

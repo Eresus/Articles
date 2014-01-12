@@ -251,7 +251,7 @@ class Articles extends ContentPlugin
                         }
                         break;
                     default:
-                        $response = $controller->actionContent($request);
+                        $response = $controller->getHtml($request);
                 }
         }
 
