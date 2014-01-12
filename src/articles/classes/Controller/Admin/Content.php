@@ -46,9 +46,6 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
             case !is_null(arg('id')) && arg('action') == 'delimage':
                 $this->actionDeleteImage();
                 break;
-            case !is_null(arg('id')) && arg('action') == 'edit':
-                $response = $this->actionEdit();
-                break;
             default:
                 $response = $this->getHtml($request);
         }
@@ -139,39 +136,39 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
     }
 
     /**
-     * Диалог изменения статьи
+     * Изменение статьи
      *
-     * @throws Exception
+     * @param Eresus_CMS_Request $request
      *
-     * @return string
+     * @return string|Eresus_HTTP_Response
      */
-    private function actionEdit()
+    protected function actionEdit(Eresus_CMS_Request $request)
     {
-        $article = $this->findArticle(arg('id'));
-
-        $legacyEresus = Eresus_CMS::getLegacyKernel();
-
-        if ('POST' == $legacyEresus->request['method'])
+        if ($request->getMethod() == 'POST')
         {
+            $args = $request->request;
+            $article = $this->findArticle($args->getInt('id'));
             $article->image = 'image';
-            $article->section = arg('section', 'int');
-            if (!is_null(arg('active')))
+            $article->section = $args->getInt('section');
+            if ($args->has('active'))
             {
-                $article->active = (boolean)arg('active', 'int');
+                $article->active = (boolean) $args->getInt('active');
             }
-            $article->posted = new DateTime(arg('posted'));
-            $article->block = (boolean)arg('block', 'int');
-            $article->caption = arg('caption');
-            $article->text = arg('text');
-            $article->preview = arg('preview');
-            if (arg('updatePreview'))
+            $article->posted = new DateTime($args->get('posted'));
+            $article->block = (boolean) $args->getInt('block');
+            $article->caption = $args->get('caption');
+            $article->text = $args->get('text');
+            $article->preview = $args->get('preview');
+            if ($args->has('updatePreview'))
             {
                 $article->createPreviewFromText();
             }
             $article->getTable()->update($article);
-            HTTP::redirect(arg('submitURL'));
+            $response = new Eresus_HTTP_Redirect($args->get('submitURL'));
+            return $response;
         }
 
+        $article = $this->findArticle($request->query->getInt('id'));
         /** @var Articles $plugin */
         $plugin = $this->getPlugin();
         $form = array(
@@ -179,6 +176,7 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
             'caption' => 'Изменить статью',
             'width' => '95%',
             'fields' => array (
+                array('type' => 'hidden', 'name' => 'action', 'value' => 'edit'),
                 array('type' => 'hidden', 'name' => 'id', 'value' => $article->id),
                 array ('type' => 'edit', 'name' => 'caption', 'label' => 'Заголовок',
                     'width' => '100%', 'maxlength' => '255'),
@@ -204,6 +202,7 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
             ),
             'buttons' => array('ok', 'apply', 'cancel'),
         );
+
         /** @var array $article */
         $html = $this->getPage()->renderForm($form, $article);
 
