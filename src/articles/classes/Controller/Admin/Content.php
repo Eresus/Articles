@@ -222,6 +222,22 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
     }
 
     /**
+     * Удаление статьи из БД
+     *
+     * @param Eresus_CMS_Request $request
+     *
+     * @return Eresus_HTTP_Redirect
+     *
+     * @since 3.01
+     */
+    protected function actionDelete(Eresus_CMS_Request $request)
+    {
+        $article = $this->findArticle($request->query->getInt('id'));
+        $article->getTable()->delete($article);
+        return new Eresus_HTTP_Redirect(Eresus_Kernel::app()->getPage()->url());
+    }
+
+    /**
      * Изменение свойств раздела
      *
      * @return string

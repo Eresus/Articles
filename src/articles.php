@@ -226,9 +226,6 @@ class Articles extends ContentPlugin
         $response = '';
         switch (true)
         {
-            case !is_null(arg('delete')):
-                $this->actionAdminDelete(arg('delete'));
-                break;
             case !is_null(arg('up')):
                 $this->table['sortDesc'] ?
                     $this->actionAdminDown(arg('up', 'dbsafe')) :
@@ -380,26 +377,6 @@ class Articles extends ContentPlugin
         $articles = $this->renderArticlesBlock();
         $text = str_replace('$(ArticlesBlock)', $articles, $text);
         return $text;
-    }
-
-    /**
-     * Удаление статьи из БД
-     *
-     * @param int $id  Идентификатор статьи
-     *
-     * @throws Exception
-     */
-    private function actionAdminDelete($id)
-    {
-        /** @var Articles_Entity_Article $article */
-        $article = ORM::getTable($this, 'Article')->find($id);
-        if (null === $article)
-        {
-            throw new Exception('Запрошенная статья не найдена');
-        }
-        $article->getTable()->delete($article);
-
-        HTTP::redirect(Eresus_Kernel::app()->getPage()->url());
     }
 
     /**
