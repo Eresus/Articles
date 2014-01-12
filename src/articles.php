@@ -105,7 +105,8 @@ class Articles extends ContentPlugin
 
         if ('none' != $this->settings['blockMode'])
         {
-            $this->listenEvents('clientOnPageRender');
+            $evd = Eresus_Kernel::app()->getEventDispatcher();
+            $evd->addListener('cms.client.render_page', array($this, 'clientOnPageRender'));
         }
     }
 
@@ -296,16 +297,15 @@ class Articles extends ContentPlugin
     }
 
     /**
-     * Обработчик события clientOnPageRender
+     * Вставляет блок статей на страницу
      *
-     * @param string $text  HTML страницы
-     * @return string
+     * @param Eresus_Event_Render $event
      */
-    public function clientOnPageRender($text)
+    public function clientOnPageRender(Eresus_Event_Render $event)
     {
         $articles = $this->renderArticlesBlock();
-        $text = str_replace('$(ArticlesBlock)', $articles, $text);
-        return $text;
+        $text = str_replace('$(ArticlesBlock)', $articles, $event->getText());
+        $event->setText($text);
     }
 
     /**
