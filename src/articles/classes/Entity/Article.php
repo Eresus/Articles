@@ -127,10 +127,18 @@ class Articles_Entity_Article extends ORM_Entity implements ArrayAccess
     {
         /** @var Articles $plugin */
         $plugin = $this->getTable()->getPlugin();
-        $filename = Eresus_Kernel::app()->getFsRoot() . '/data/' . $plugin->getName() .
+        $basename = Eresus_Kernel::app()->getFsRoot() . '/data/' . $plugin->getName() .
             '/' . $this->id;
-        unlink($filename . '.jpg');
-        unlink($filename . '-thmb.jpg');
+        $filename = $basename . '.jpg';
+        if (file_exists($filename))
+        {
+            unlink($filename);
+        }
+        $filename = $basename . '-thmb.jpg';
+        if (file_exists($filename))
+        {
+            unlink($filename);
+        }
     }
 
     /**
