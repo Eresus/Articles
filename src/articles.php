@@ -108,22 +108,8 @@ class Articles extends ContentPlugin
      * @todo устарело, удалить после рефакторинга
      */
     public $table = array (
-        'name' => 'articles',
-        'key'=> 'id',
         'sortMode' => 'posted',
         'sortDesc' => true,
-        'columns' => array(
-            array('name' => 'caption', 'caption' => 'Заголовок'),
-            array('name' => 'posted', 'align' => 'center', 'value' => templPosted,
-                'macros' => true),
-            array('name' => 'preview', 'caption' => 'Кратко', 'maxlength' => 255,
-                'striptags' => true),
-        ),
-        'controls' => array (
-            'delete' => '',
-            'edit' => '',
-            'toggle' => '',
-        )
     );
 
     /**
@@ -223,27 +209,7 @@ class Articles extends ContentPlugin
     public function adminRenderContent(Eresus_CMS_Request $request)
     {
         $controller = new Articles_Controller_Admin_Content($this);
-        $response = '';
-        switch (true)
-        {
-            case !is_null(arg('up')):
-                $this->table['sortDesc'] ?
-                    $this->actionAdminDown(arg('up', 'dbsafe')) :
-                    $this->actionAdminUp(arg('up', 'dbsafe'));
-                break;
-            case !is_null(arg('down')):
-                if ($this->table['sortDesc'])
-                {
-                    $this->actionAdminUp(arg('down', 'dbsafe'));
-                }
-                else
-                {
-                    $this->actionAdminDown(arg('down', 'dbsafe'));
-                }
-                break;
-            default:
-                $response = $controller->getHtml($request);
-        }
+        $response = $controller->getHtml($request);
 
         if (is_string($response))
         {
@@ -403,52 +369,6 @@ class Articles extends ContentPlugin
         $tmpl = $this->templates()->client('Block.html');
         $html = $tmpl->compile($vars);
         return $html;
-    }
-
-    /**
-     * Перемещает статью выше по списку
-     *
-     * @param int $id
-     *
-     * @throws Exception
-     *
-     * @since 3.01
-     */
-    private function actionAdminUp($id)
-    {
-        /** @var Articles_Entity_Article $article */
-        $article = ORM::getTable($this, 'Article')->find($id);
-        if (null === $article)
-        {
-            throw new Exception('Запрошенная статья не найдена');
-        }
-        $helper = new ORM_Helper_Ordering();
-        $helper->groupBy('section');
-        $helper->moveUp($article);
-        HTTP::redirect(Eresus_Kernel::app()->getPage()->url());
-    }
-
-    /**
-     * Перемещает статью ниже по списку
-     *
-     * @param int $id
-     *
-     * @throws Exception
-     *
-     * @since 3.01
-     */
-    private function actionAdminDown($id)
-    {
-        /** @var Articles_Entity_Article $article */
-        $article = ORM::getTable($this, 'Article')->find($id);
-        if (null === $article)
-        {
-            throw new Exception('Запрошенная статья не найдена');
-        }
-        $helper = new ORM_Helper_Ordering();
-        $helper->groupBy('section');
-        $helper->moveDown($article);
-        HTTP::redirect(Eresus_Kernel::app()->getPage()->url());
     }
 }
 

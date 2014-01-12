@@ -9,7 +9,11 @@
         {foreach $list->getItems() item}
         <tr>
             <td class="ctrl">
+                {if $settings.listSortMode == 'position'}
+                {$list->getControls($item, 'edit', 'toggle', 'delete', 'ordering')}
+                {else}
                 {$list->getControls($item, 'edit', 'toggle', 'delete')}
+                {/if}
             </td>
             <td>{$item->caption}</td>
             <td style="white-space: nowrap">{$item->posted->format('d.m.y H:i:s')}</td>

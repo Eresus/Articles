@@ -57,7 +57,7 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
         $list->setPage($currentPage);
 
         $tmpl = $this->getPlugin()->templates()->admin('ArticleList.html');
-        $html = $tmpl->compile(array('list' => $list));
+        $html = $tmpl->compile(array('list' => $list, 'settings' => $plugin->settings));
         return $html;
     }
 
@@ -217,7 +217,7 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
         $article->active = !$article->active;
         $article->getTable()->update($article);
 
-        $response = new Eresus_HTTP_Redirect($this->getPage()->url());
+        $response = new Eresus_HTTP_Redirect($this->getPage()->url(array('id' => '')));
         return $response;
     }
 
@@ -234,6 +234,62 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
     {
         $article = $this->findArticle($request->query->getInt('id'));
         $article->getTable()->delete($article);
+        return new Eresus_HTTP_Redirect(Eresus_Kernel::app()->getPage()->url(array('id' => '')));
+    }
+
+    /**
+     * Перемещает статью выше по списку
+     *
+     * @param Eresus_CMS_Request $request
+     *
+     * @return Eresus_HTTP_Redirect
+     *
+     * @since 3.01
+     */
+    protected function actionUp(Eresus_CMS_Request $request)
+    {
+        $article = $this->findArticle($request->query->getInt('id'));
+        $helper = new ORM_Helper_Ordering();
+        $helper->groupBy('section');
+
+        /** @var Articles $plugin */
+        $plugin = $this->getPlugin();
+        if ($plugin->table['sortDesc'])
+        {
+            $helper->moveDown($article);
+        }
+        else
+        {
+            $helper->moveUp($article);
+        }
+
+        return new Eresus_HTTP_Redirect(Eresus_Kernel::app()->getPage()->url(array('id' => '')));
+    }
+
+    /**
+     * Перемещает статью ниже по списку
+     *
+     * @param Eresus_CMS_Request $request
+     *
+     * @return Eresus_HTTP_Redirect
+     *
+     * @since 3.01
+     */
+    protected function actionDown(Eresus_CMS_Request $request)
+    {
+        $article = $this->findArticle($request->query->getInt('id'));
+        $helper = new ORM_Helper_Ordering();
+        $helper->groupBy('section');
+        /** @var Articles $plugin */
+        $plugin = $this->getPlugin();
+        if ($plugin->table['sortDesc'])
+        {
+            $helper->moveUp($article);
+        }
+        else
+        {
+            $helper->moveDown($article);
+        }
         return new Eresus_HTTP_Redirect(Eresus_Kernel::app()->getPage()->url());
     }
 
