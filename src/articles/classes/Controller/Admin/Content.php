@@ -222,6 +222,44 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
     }
 
     /**
+     * Изменение свойств раздела
+     *
+     * @return string
+     *
+     * @since 3.01
+     */
+    protected function actionProperties()
+    {
+        $legacyEresus = Eresus_CMS::getLegacyKernel();
+        $sections = $legacyEresus->sections;
+        /** @var TAdminUI $page */
+        $page = Eresus_Kernel::app()->getPage();
+        $section = $sections->get($page->id);
+
+        if ('POST' == $legacyEresus->request['method'])
+        {
+            $section['content'] = arg('content');
+            $sections->update($section);
+
+            HTTP::redirect($page->url(array('action' => 'properties')));
+        }
+
+        $form = array(
+            'name' => 'contentEditor',
+            'caption' => 'Текст на странице',
+            'width' => '95%',
+            'fields' => array(
+                array('type' => 'hidden', 'name' => 'action', 'value' => 'properties'),
+                array('type' => 'html', 'name' => 'content', 'height' => '400px'),
+            ),
+            'buttons'=> array('ok' => 'Сохранить'),
+        );
+
+        $html = $page->renderForm($form, $section);
+        return $html;
+    }
+
+    /**
      * Ищет и возвращает статью с указанным идентификатором
      *
      * @param int $id

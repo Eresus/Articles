@@ -224,35 +224,28 @@ class Articles extends ContentPlugin
     {
         $controller = new Articles_Controller_Admin_Content($this);
         $response = '';
-        switch (arg('action'))
+        switch (true)
         {
-            case 'properties':
-                $response = $this->actionAdminProperties();
+            case !is_null(arg('delete')):
+                $this->actionAdminDelete(arg('delete'));
+                break;
+            case !is_null(arg('up')):
+                $this->table['sortDesc'] ?
+                    $this->actionAdminDown(arg('up', 'dbsafe')) :
+                    $this->actionAdminUp(arg('up', 'dbsafe'));
+                break;
+            case !is_null(arg('down')):
+                if ($this->table['sortDesc'])
+                {
+                    $this->actionAdminUp(arg('down', 'dbsafe'));
+                }
+                else
+                {
+                    $this->actionAdminDown(arg('down', 'dbsafe'));
+                }
                 break;
             default:
-                switch (true)
-                {
-                    case !is_null(arg('delete')):
-                        $this->actionAdminDelete(arg('delete'));
-                        break;
-                    case !is_null(arg('up')):
-                        $this->table['sortDesc'] ?
-                            $this->actionAdminDown(arg('up', 'dbsafe')) :
-                            $this->actionAdminUp(arg('up', 'dbsafe'));
-                        break;
-                    case !is_null(arg('down')):
-                        if ($this->table['sortDesc'])
-                        {
-                            $this->actionAdminUp(arg('down', 'dbsafe'));
-                        }
-                        else
-                        {
-                            $this->actionAdminDown(arg('down', 'dbsafe'));
-                        }
-                        break;
-                    default:
-                        $response = $controller->getHtml($request);
-                }
+                $response = $controller->getHtml($request);
         }
 
         if (is_string($response))
@@ -264,7 +257,8 @@ class Articles extends ContentPlugin
                 'items' => array(
                     'create' => array('caption' => 'Добавить статью', 'name'=>'action',
                         'value' => 'add'),
-                    'list' => array('caption' => 'Список статей'),
+                    'list' => array('caption' => 'Список статей',
+                        'url' => $page->url(array('id' => ''))),
                     'text' => array('caption' => 'Текст на странице', 'name' => 'action',
                         'value' => 'properties'),
                 ),
@@ -386,44 +380,6 @@ class Articles extends ContentPlugin
         $articles = $this->renderArticlesBlock();
         $text = str_replace('$(ArticlesBlock)', $articles, $text);
         return $text;
-    }
-
-    /**
-     * Изменение свойств раздела
-     *
-     * @return string
-     *
-     * @since 3.01
-     */
-    private function actionAdminProperties()
-    {
-        $legacyEresus = Eresus_CMS::getLegacyKernel();
-        $sections = $legacyEresus->sections;
-        /** @var TAdminUI $page */
-        $page = Eresus_Kernel::app()->getPage();
-        $section = $sections->get($page->id);
-
-        if ('POST' == $legacyEresus->request['method'])
-        {
-            $section['content'] = arg('content');
-            $sections->update($section);
-
-            HTTP::redirect($page->url(array('action' => 'properties')));
-        }
-
-        $form = array(
-            'name' => 'contentEditor',
-            'caption' => 'Текст на странице',
-            'width' => '95%',
-            'fields' => array(
-                array('type' => 'hidden', 'name' => 'action', 'value' => 'properties'),
-                array('type' => 'html', 'name' => 'content', 'height' => '400px'),
-            ),
-            'buttons'=> array('ok' => 'Сохранить'),
-        );
-
-        $html = $page->renderForm($form, $section);
-        return $html;
     }
 
     /**
