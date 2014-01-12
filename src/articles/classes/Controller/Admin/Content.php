@@ -103,7 +103,7 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
                 array ('type' => 'memo', 'name' => 'preview', 'label' => 'Краткое описание',
                     'height' => '10'),
                 array ('type' =>
-                    $plugin->settings['blockMode'] == $plugin::BLOCK_MANUAL ? 'checkbox' : 'hidden',
+                    $plugin->settings['blockMode'] == 'manual' ? 'checkbox' : 'hidden',
                     'name' => 'block', 'label' => 'Показывать в блоке'),
                 array ('type' => 'file', 'name' => 'image', 'label' => 'Картинка',
                     'width' => '100'),
@@ -166,7 +166,7 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
                     'height' => '5'),
                 array ('type' => 'checkbox', 'name'=>'updatePreview',
                     'label'=>'Обновить краткое описание автоматически', 'value' => false),
-                array ('type' => $plugin->settings['blockMode'] == $plugin::BLOCK_MANUAL
+                array ('type' => $plugin->settings['blockMode'] == 'manual'
                     ? 'checkbox' : 'hidden', 'name' => 'block', 'label' => 'Показывать в блоке'),
                 array ('type' => 'file', 'name' => 'image', 'label' => 'Картинка', 'width' => '100',
                     'comment' => $article->imageUrl ?

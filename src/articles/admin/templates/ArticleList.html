@@ -3,6 +3,7 @@
         <tr>
             <th>Управление</th>
             <th>Заголовок</th>
+            {if 'manual' == $settings.blockMode}<th style="white-space: nowrap">В блоке</th>{/if}
             <th>Опубликовано</th>
             <th>Краткое описание</th>
         </tr>
@@ -16,6 +17,7 @@
                 {/if}
             </td>
             <td>{$item->caption}</td>
+            {if 'manual' == $settings.blockMode}<td>{if $item->block}да{/if}</td>{/if}
             <td style="white-space: nowrap">{$item->posted->format('d.m.y H:i:s')}</td>
             <td>{$item->preview}</td>
         </tr>

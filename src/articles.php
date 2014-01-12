@@ -42,24 +42,6 @@
 class Articles extends ContentPlugin
 {
     /**
-     * Режим блока: блок отключен
-     * @var int
-     */
-    const BLOCK_NONE = 0;
-
-    /**
-     * Режим блока: последние статьи
-     * @var int
-     */
-    const BLOCK_LAST = 1;
-
-    /**
-     * Режим блока: избранные статьи
-     * @var int
-     */
-    const BLOCK_MANUAL = 2;
-
-    /**
      * Требуемая версия ядра
      * @var string
      */
@@ -75,7 +57,7 @@ class Articles extends ContentPlugin
      * Версия плагина
      * @var string
      */
-    public $version = '';//${product.version}';
+    public $version = '';//${product.version}';TODO
 
     /**
      * Описание плагина
@@ -93,7 +75,7 @@ class Articles extends ContentPlugin
         'previewSmartSplit' => true,
         'listSortMode' => 'posted',
         'listSortDesc' => true,
-        'blockMode' => 0, # 0 - отключить, 1 - последние, 2 - избранные
+        'blockMode' => 'none',
         'blockCount' => 5,
         'THimageWidth' => 120,
         'THimageHeight' => 90,
@@ -121,28 +103,9 @@ class Articles extends ContentPlugin
     {
         parent::__construct();
 
-        if ($this->settings['blockMode'])
+        if ('none' != $this->settings['blockMode'])
         {
             $this->listenEvents('clientOnPageRender');
-        }
-
-        $this->table['sortMode'] = $this->settings['listSortMode'];
-        $this->table['sortDesc'] = $this->settings['listSortDesc'];
-
-        if ($this->table['sortMode'] == 'position')
-        {
-            $this->table['controls']['position'] = '';
-        }
-
-        if ($this->settings['blockMode'] == self::BLOCK_MANUAL)
-        {
-            $temp = array_shift($this->table['columns']);
-            array_unshift($this->table['columns'], array('name' => 'block', 'align'=>'center',
-                'replace' => array(
-                    0 => '',
-                    1 => '<span title="Показывается в блоке статей">*</span>'
-                )
-            ), $temp);
         }
     }
 
@@ -271,7 +234,7 @@ class Articles extends ContentPlugin
                 array('type'=>'checkbox','name'=>'listSortDesc','label'=>'В обратном порядке'),
                 array('type'=>'header', 'value' => 'Блок статей'),
                 array('type'=>'select','name'=>'blockMode','label'=>'Режим блока статей',
-                    'values' => array(self::BLOCK_NONE, self::BLOCK_LAST, self::BLOCK_MANUAL),
+                    'values' => array('none', 'last', 'manual'),
                     'items' => array('Отключить','Последние статьи','Избранные статьи')),
                 array('type'=>'memo','name'=>'tmplBlock','label'=>'Шаблон элемента блока',
                     'height'=>'3', 'value' => $this->templates()->clientRead('Block.html')),
@@ -355,7 +318,7 @@ class Articles extends ContentPlugin
         /** @var Articles_Entity_Table_Article $table */
         $table = ORM::getTable($this, 'Article');
         $q = $table->createSelectQuery();
-        if (self::BLOCK_MANUAL == $this->settings['blockMode'])
+        if ('manual' == $this->settings['blockMode'])
         {
             $q->where($q->expr->eq('block', $q->bindValue(true, null, PDO::PARAM_BOOL)));
         }
