@@ -35,30 +35,27 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
     /**
      * Возвращает разметку области контента
      *
-     * @return string
+     * @return string|Eresus_HTTP_Response
      * @since 3.01
      */
-    public function actionContent()
+    public function actionContent(Eresus_CMS_Request $request)
     {
-        $html = '';
+        $response = '';
         switch (true)
         {
-            case arg('action') == 'add':
-                $html = $this->actionAdd();
-                break;
             case !is_null(arg('id')) && arg('action') == 'delimage':
                 $this->actionDeleteImage();
                 break;
             case !is_null(arg('id')):
-                $html = $this->actionEdit();
+                $response = $this->actionEdit();
                 break;
             case !is_null(arg('toggle')):
                 $this->actionToggle();
                 break;
             default:
-                $html = $this->actionList();
+                $response = $this->getHtml($request);
         }
-        return $html;
+        return $response;
     }
 
     /**
@@ -68,7 +65,7 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
      *
      * @since 3.01
      */
-    private function actionList()
+    protected function actionIndex()
     {
         /** @var Articles_Entity_Table_Article $table */
         $table = ORM::getTable($this->getPlugin(), 'Article');
@@ -90,25 +87,27 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
     /**
      * Диалог добавления статьи
      *
-     * @return string  разметка области контента
+     * @param Eresus_CMS_Request $request
+     *
+     * @return Eresus_HTTP_Response|string  ответ или разметка области контента
      */
-    private function actionAdd()
+    protected function actionAdd(Eresus_CMS_Request $request)
     {
-        $legacyEresus = Eresus_CMS::getLegacyKernel();
-
-        if ('POST' == $legacyEresus->request['method'])
+        if ($request->getMethod() == 'POST')
         {
+            $req = $request->request;
             $article = new Articles_Entity_Article();
-            $article->section = arg('section', 'int');
+            $article->section = $req->getInt('section');
             $article->active = true;
             $article->posted = new DateTime();
-            $article->block = (boolean) arg('block', 'int');
-            $article->caption = arg('caption');
-            $article->text = arg('text');
-            $article->preview = arg('preview');
+            $article->block = (boolean) $req->getInt('block');
+            $article->caption = $req->get('caption');
+            $article->text = $req->get('text');
+            $article->preview = $req->get('preview');
             $article->image = 'image';
             $article->getTable()->persist($article);
-            HTTP::redirect(arg('submitURL'));
+            $response = new Eresus_HTTP_Redirect(arg('submitURL'));
+            return $response;
         }
 
         /** @var Articles $plugin */

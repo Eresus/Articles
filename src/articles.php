@@ -75,7 +75,7 @@ class Articles extends ContentPlugin
      * Версия плагина
      * @var string
      */
-    public $version = '${product.version}';
+    public $version = '';//${product.version}';
 
     /**
      * Описание плагина
@@ -216,16 +216,18 @@ class Articles extends ContentPlugin
     /**
      * Возвращает разметку области контента АИ модуля
      *
+     * @param Eresus_CMS_Request $request
+     *
      * @return string
      */
-    public function adminRenderContent()
+    public function adminRenderContent(Eresus_CMS_Request $request)
     {
         $controller = new Articles_Controller_Admin_Content($this);
-        $html = '';
+        $response = '';
         switch (arg('action'))
         {
             case 'properties':
-                $html = $this->actionAdminProperties();
+                $response = $this->actionAdminProperties();
                 break;
             default:
                 switch (true)
@@ -249,23 +251,27 @@ class Articles extends ContentPlugin
                         }
                         break;
                     default:
-                        $html = $controller->actionContent();
+                        $response = $controller->actionContent($request);
                 }
         }
-        /** @var TAdminUI $page */
-        $page = Eresus_Kernel::app()->getPage();
-        $html = $page->renderTabs(array(
-            'width' => '180px',
-            'items' => array(
-                'create' => array('caption' => 'Добавить статью', 'name'=>'action',
-                    'value' => 'add'),
-                'list' => array('caption' => 'Список статей'),
-                'text' => array('caption' => 'Текст на странице', 'name' => 'action',
-                    'value' => 'properties'),
-            ),
-        )) . $html;
 
-        return $html;
+        if (is_string($response))
+        {
+            /** @var TAdminUI $page */
+            $page = Eresus_Kernel::app()->getPage();
+            $response = $page->renderTabs(array(
+                'width' => '180px',
+                'items' => array(
+                    'create' => array('caption' => 'Добавить статью', 'name'=>'action',
+                        'value' => 'add'),
+                    'list' => array('caption' => 'Список статей'),
+                    'text' => array('caption' => 'Текст на странице', 'name' => 'action',
+                        'value' => 'properties'),
+                ),
+            )) . $response;
+        }
+
+        return $response;
     }
 
     /**
