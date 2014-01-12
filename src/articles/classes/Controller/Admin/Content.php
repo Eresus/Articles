@@ -46,11 +46,8 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
             case !is_null(arg('id')) && arg('action') == 'delimage':
                 $this->actionDeleteImage();
                 break;
-            case !is_null(arg('id')):
+            case !is_null(arg('id')) && arg('action') == 'edit':
                 $response = $this->actionEdit();
-                break;
-            case !is_null(arg('toggle')):
-                $this->actionToggle();
                 break;
             default:
                 $response = $this->getHtml($request);
@@ -61,26 +58,29 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
     /**
      * Возвращает разметку списка статей
      *
+     * @param Eresus_CMS_Request $request
+     *
      * @return string
      *
      * @since 3.01
      */
-    protected function actionIndex()
+    protected function actionIndex(Eresus_CMS_Request $request)
     {
-        /** @var Articles_Entity_Table_Article $table */
+        /** @var Articles $plugin */
+        $plugin = $this->getPlugin();
+
         $table = ORM::getTable($this->getPlugin(), 'Article');
-        $perPage = $this->getPlugin()->settings['itemsPerPage'];
-        $currentPage = arg('pg') ?: 1;
-        $articles = $table->findInSection($this->getPage()->id, $perPage,
-            ($currentPage - 1) * $perPage, true);
+        $provider = new ORM_UI_List_DataProvider($table);
+        $provider->orderBy($plugin->table['sortMode'], $plugin->table['sortDesc']);
 
-        $pageCount = ceil($table->countInSection($this->getPage()->id, true) / $perPage);
-        $urlTemplate = $this->getPage()->url(array('pg' => '%d'));
-        $pager = new PaginationHelper($pageCount, $currentPage, $urlTemplate);
+        $list = new UI_List($this->getPlugin(), $provider);
+        $list->setPageSize($this->getPlugin()->settings['itemsPerPage']);
 
-        $html =
-            $this->getPage()->renderTable($this->getPlugin()->table, $articles) .
-            $pager->render();
+        $currentPage = $request->query->has('page') ? $request->query->getInt('page') : 1;
+        $list->setPage($currentPage);
+
+        $tmpl = $this->getPlugin()->templates()->admin('ArticleList.html');
+        $html = $tmpl->compile(array('list' => $list));
         return $html;
     }
 
@@ -227,17 +227,18 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
     /**
      * Переключает активность статьи
      *
-     * @throws Exception
+     * @param Eresus_CMS_Request $request
      *
-     * @return void
+     * @return Eresus_HTTP_Response
      */
-    private function actionToggle()
+    protected function actionToggle(Eresus_CMS_Request $request)
     {
-        $article = $this->findArticle(arg('toggle'));
+        $article = $this->findArticle($request->query->getInt('id'));
         $article->active = !$article->active;
         $article->getTable()->update($article);
 
-        HTTP::redirect(str_replace('&amp;', '&', $this->getPage()->url()));
+        $response = new Eresus_HTTP_Redirect($this->getPage()->url());
+        return $response;
     }
 
     /**

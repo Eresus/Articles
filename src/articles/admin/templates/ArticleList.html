@@ -1,0 +1,25 @@
+{if count($list->getItems())}
+    <table class="admList">
+        <tr>
+            <th>Управление</th>
+            <th>Заголовок</th>
+            <th>Опубликовано</th>
+            <th>Краткое описание</th>
+        </tr>
+        {foreach $list->getItems() item}
+        <tr>
+            <td class="ctrl">
+                {$list->getControls($item, 'edit', 'toggle', 'delete')}
+            </td>
+            <td>{$item->caption}</td>
+            <td style="white-space: nowrap">{$item->posted->format('d.m.y H:i:s')}</td>
+            <td>{$item->preview}</td>
+        </tr>
+        {/foreach}
+        <tr>
+            <td colspan="4">
+                {$list->getPagination()->render()}
+            </td>
+        </tr>
+    </table>
+{/if}

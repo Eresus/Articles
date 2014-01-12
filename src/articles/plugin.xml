@@ -2,7 +2,8 @@
 <declaration uid="ru.eresus.plugins.articles" format="1.00">
 
 	<requires>
-		<plugin name="orm" min="3.01a" max="3.01" />
+		<plugin name="orm" min="3.01a" max="3.01"/>
+        <plugin name="ui" min="2.00" max="2.03"/>
 	</requires>
 
 </declaration>
