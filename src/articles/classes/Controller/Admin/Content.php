@@ -40,15 +40,7 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
      */
     public function actionContent(Eresus_CMS_Request $request)
     {
-        $response = '';
-        switch (true)
-        {
-            case !is_null(arg('id')) && arg('action') == 'delimage':
-                $this->actionDeleteImage();
-                break;
-            default:
-                $response = $this->getHtml($request);
-        }
+        $response = $this->getHtml($request);
         return $response;
     }
 
@@ -212,15 +204,16 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
     /**
      * Удаляет картинку статьи
      *
-     * @throws Exception
+     * @param Eresus_CMS_Request $request
      *
-     * @return void
+     * @return Eresus_HTTP_Response
      */
-    private function actionDeleteImage()
+    protected function actionDelImage(Eresus_CMS_Request $request)
     {
-        $article = $this->findArticle(arg('id'));
+        $article = $this->findArticle($request->query->getInt('id'));
         $article->image = null;
-        HTTP::redirect($this->getPage()->url());
+        $url = $this->getPage()->url(array('id' => $article->id, 'action' => 'edit'));
+        return new Eresus_HTTP_Redirect($url);
     }
 
     /**
