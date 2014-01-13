@@ -1,6 +1,7 @@
 {
     "name": "eresus/articles",
     "description": "Модуль «Статьи» для Eresus CMS",
+    "license": "GPL-3.0",
     "authors":
     [
         {
