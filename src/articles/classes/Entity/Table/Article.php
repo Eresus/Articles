@@ -32,7 +32,6 @@
  */
 class Articles_Entity_Table_Article extends ORM_Table
 {
-    private $columns;
     /**
      * Описание таблицы
      * @since 3.01
@@ -40,7 +39,7 @@ class Articles_Entity_Table_Article extends ORM_Table
     protected function setTableDefinition()
     {
         $this->setTableName('articles');
-        $this->hasColumns($this->columns = array(
+        $this->hasColumns(array(
             'id' => array(
                 'type' => 'integer',
                 'unsigned' => true,
