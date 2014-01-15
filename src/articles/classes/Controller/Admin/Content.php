@@ -48,6 +48,7 @@ class Articles_Controller_Admin_Content extends Eresus_Plugin_Controller_Admin_C
 
         $table = ORM::getTable($this->getPlugin(), 'Article');
         $provider = new ORM_UI_List_DataProvider($table);
+        $provider->filterInclude('section', $request->query->getInt('section'));
         $provider->orderBy($plugin->settings['listSortMode'], $plugin->settings['listSortDesc']);
 
         $list = new UI_List($this->getPlugin(), $provider);
