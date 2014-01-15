@@ -57,7 +57,7 @@ class Articles extends ContentPlugin
      * Версия плагина
      * @var string
      */
-    public $version = '';//${product.version}';TODO
+    public $version = '${product.version}';
 
     /**
      * Описание плагина
@@ -296,6 +296,25 @@ class Articles extends ContentPlugin
         $articles = $this->renderArticlesBlock();
         $text = str_replace('$(ArticlesBlock)', $articles, $event->getText());
         $event->setText($text);
+    }
+
+    /**
+     * Удаляет статьи при удалении раздела сайта
+     *
+     * @param int $sectionId
+     *
+     * @since x.xx
+     */
+    public function onSectionDelete($sectionId)
+    {
+        /** @var Articles_Entity_Table_Article $table */
+        $table = ORM::getTable($this, 'Article');
+        /** @var Articles_Entity_Article[] $articles */
+        $articles = $table->findInSection($sectionId, null, 0, true);
+        foreach ($articles as $article)
+        {
+            $table->delete($article);
+        }
     }
 
     /**
