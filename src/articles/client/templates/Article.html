@@ -7,5 +7,10 @@
     <img src="{$article->imageUrl}" alt="{$article->caption|escape}" class="article__image"
          width="{$settings.imageWidth}" height="{$settings.imageHeight}">
     {/if}
+
     {$article->text}
+
+    <footer class="article__footer">
+        <a href="#" class="link article__back">Назад к списку</a>
+    </footer>
 </article>
