@@ -303,7 +303,7 @@ class Articles extends ContentPlugin
      *
      * @param int $sectionId
      *
-     * @since x.xx
+     * @since 3.01
      */
     public function onSectionDelete($sectionId)
     {
