@@ -1,0 +1,16 @@
+<article class="article">
+    <header class="article__header">
+        <h1 class="article__title">{$article->caption}</h1>
+        <time class="article__posted" datetime="{$article->posted->format('Y-m-d')}">{$article->posted->format('d.m.y')}</time>
+    </header>
+    {if $article->imageUrl}
+    <img src="{$article->imageUrl}" alt="{$article->caption|escape}" class="article__image"
+         width="{$settings.imageWidth}" height="{$settings.imageHeight}">
+    {/if}
+
+    {$article->text}
+
+    <footer class="article__footer">
+        <a href="#" class="link article__back">Назад к списку</a>
+    </footer>
+</article>

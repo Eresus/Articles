@@ -4,13 +4,13 @@
  *
  * Публикация статей
  *
- * @version 2.16
+ * @version ${product.version}
  *
  * @copyright 2005, ProCreat Systems, http://procreat.ru/
  * @copyright 2007, Eresus Group, http://eresus.ru/
  * @copyright 2010, ООО "Два слона", http://dvaslona.ru/
  * @license http://www.gnu.org/licenses/gpl.txt  GPL License 3
- * @author Михаил Красильников <mihalych@vsepofigu.ru>
+ * @author Михаил Красильников <mk@dvaslona.ru>
  * @author БерсЪ <bersz@procreat.ru>
  * @author Андрей Афонинский
  *
@@ -31,8 +31,6 @@
  * <http://www.gnu.org/licenses/>
  *
  * @package Articles
- *
- * $Id$
  */
 
 
@@ -41,8 +39,9 @@
  *
  * @package Articles
  */
-class TArticles extends TListContentPlugin
+class Articles extends ContentPlugin
 {
+<<<<<<< HEAD
 	/**
 	 * Режим блока: блок отключен
 	 * @var int
@@ -600,355 +599,308 @@ class TArticles extends TListContentPlugin
 					'maxlength'=>'2'),
 				array('type'=>'memo','name'=>'tmplList','label'=>'Шаблон списка','height'=>'3'),
 				array('type'=>'text','value'=>'
+=======
+    /**
+     * Требуемая версия ядра
+     * @var string
+     */
+    public $kernel = '3.01a';
+
+    /**
+     * Название плагина
+     * @var string
+     */
+    public $title = 'Статьи';
+
+    /**
+     * Версия плагина
+     * @var string
+     */
+    public $version = '${product.version}';
+
+    /**
+     * Описание плагина
+     * @var string
+     */
+    public $description = 'Публикация статей';
+
+    /**
+     * Настройки плагина
+     * @var array
+     */
+    public $settings = array(
+        'itemsPerPage' => 10,
+        'previewMaxSize' => 500,
+        'previewSmartSplit' => true,
+        'listSortMode' => 'posted',
+        'listSortDesc' => true,
+        'blockMode' => 'none',
+        'blockCount' => 5,
+        'THimageWidth' => 120,
+        'THimageHeight' => 90,
+        'imageWidth' => 640,
+        'imageHeight' => 480,
+        'imageColor' => '#ffffff',
+    );
+
+    /**
+     * Конструктор
+     *
+     * Производит регистрацию обработчиков событий
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        if ('none' != $this->settings['blockMode'])
+        {
+            $evd = Eresus_Kernel::app()->getEventDispatcher();
+            $evd->addListener('cms.client.render_page', array($this, 'clientOnPageRender'));
+        }
+    }
+
+    /**
+     * Процедура установки плагина
+     *
+     * @return void
+     */
+    public function install()
+    {
+        parent::install();
+        $driver = ORM::getManager()->getDriver();
+        $driver->createTable(ORM::getTable($this, 'Article'));
+        $this->mkdir();
+    }
+
+    /**
+     * Действия при удалении плагина
+     *
+     * @return void
+     */
+    public function uninstall()
+    {
+        $this->rmdir();
+        $driver = ORM::getManager()->getDriver();
+        $driver->dropTable(ORM::getTable($this, 'Article'));
+        parent::uninstall();
+    }
+
+    /**
+     * Замена макросов в строке
+     *
+     * @param string $template  Шаблон
+     * @param array  $item      Массив замен
+     * @return string  HTML
+     */
+    public function replaceMacros($template, $item)
+    {
+        $html = str_replace(
+            array(
+                '$(imageWidth)',
+                '$(imageHeight)',
+                '$(thumbWidth)',
+                '$(thumbHeight)',
+            ),
+            array(
+                $this->settings['imageWidth'],
+                $this->settings['imageHeight'],
+                $this->settings['THimageWidth'],
+                $this->settings['THimageHeight'],
+            ),
+            $template
+        );
+        return parent::replaceMacros($html, $item);
+    }
+
+    /**
+     * Возвращает разметку области контента АИ модуля
+     *
+     * @param Eresus_CMS_Request $request
+     *
+     * @return string
+     */
+    public function adminRenderContent(Eresus_CMS_Request $request)
+    {
+        $controller = new Articles_Controller_Admin_Content($this);
+        $response = $controller->getHtml($request);
+
+        if (is_string($response))
+        {
+            /** @var TAdminUI $page */
+            $page = Eresus_Kernel::app()->getPage();
+            $response = $page->renderTabs(array(
+                'width' => '180px',
+                'items' => array(
+                    'create' => array('caption' => 'Добавить статью', 'name'=>'action',
+                        'value' => 'add'),
+                    'list' => array('caption' => 'Список статей',
+                        'url' => $page->url(array('id' => ''))),
+                    'text' => array('caption' => 'Текст на странице', 'name' => 'action',
+                        'value' => 'properties'),
+                ),
+            )) . $response;
+        }
+
+        return $response;
+    }
+
+    /**
+     * Диалог настроек
+     * @return string
+     */
+    public function settings()
+    {
+        /** @var TAdminUI $page */
+        $page = Eresus_Kernel::app()->getPage();
+
+        $form = array(
+            'name' => 'settings',
+            'caption' => $this->title.' '.$this->version,
+            'width' => '500px',
+            'fields' => array (
+                array('type' => 'hidden', 'name' => 'update', 'value' => $this->getName()),
+                array('type' => 'text', 'value' =>
+                    'Для вставки блока статей используйте макрос <b>$(ArticlesBlock)</b><br>'),
+                array('type' => 'header', 'value' => 'Параметры полнотекстового просмотра'),
+                array('type' => 'memo', 'name' => 'tmplArticle',
+                    'label' => 'Шаблон полнотекстового просмотра', 'height'=>'5',
+                    'value' => $this->templates()->clientRead('Article.html')),
+                array('type'=>'header', 'value' => 'Параметры списка'),
+                array('type'=>'edit','name'=>'itemsPerPage','label'=>'Статей на страницу',
+                    'width'=>'50px',
+                    'maxlength'=>'2'),
+                array('type' => 'memo', 'name' => 'tmplList', 'label' => 'Шаблон списка статей',
+                    'height' => '10',
+                    'value' => $this->templates()->clientRead('List.html')),
+                array('type' => 'text', 'value' => '
+>>>>>>> release/v3.01
 					Макросы:<br />
 					<strong>$(title)</strong> - заголовок страницы,<br />
 					<strong>$(content)</strong> - контент страницы,<br />
 					<strong>$(items)</strong> - список статей
 				'),
-				array('type'=>'memo','name'=>'tmplListItem','label'=>'Шаблон элемента списка',
-					'height'=>'5'),
-				array('type'=>'edit','name'=>'dateFormatPreview','label'=>'Формат даты', 'width'=>'100px'),
-				array('type'=>'select','name'=>'listSortMode','label'=>'Сортировка',
-					'values' => array('posted', 'position'),
-					'items' => array('По дате добавления', 'Ручная')),
-				array('type'=>'checkbox','name'=>'listSortDesc','label'=>'В обратном порядке'),
-				array('type'=>'header', 'value' => 'Блок статей'),
-				array('type'=>'select','name'=>'blockMode','label'=>'Режим блока статей',
-					'values' => array(self::BLOCK_NONE, self::BLOCK_LAST, self::BLOCK_MANUAL),
-					'items' => array('Отключить','Последние статьи','Избранные статьи')),
-				array('type'=>'memo','name'=>'tmplBlockItem','label'=>'Шаблон элемента блока',
-					'height'=>'3'),
-				array('type'=>'edit','name'=>'blockCount','label'=>'Количество', 'width'=>'50px'),
-				array('type'=>'header', 'value' => 'Краткое описание'),
-				array('type'=>'edit','name'=>'previewMaxSize','label'=>'Макс. размер описания',
-					'width'=>'50px', 'maxlength'=>'4', 'comment'=>'символов'),
-				array('type'=>'checkbox','name'=>'previewSmartSplit','label'=>'"Умное" создание описания'),
-				array('type'=>'header', 'value' => 'Картинка'),
-				array('type'=>'edit','name'=>'imageWidth','label'=>'Ширина', 'width'=>'100px'),
-				array('type'=>'edit','name'=>'imageHeight','label'=>'Высота', 'width'=>'100px'),
-				array('type'=>'edit','name'=>'THimageWidth','label'=>'Ширина Миниатюры', 'width'=>'100px'),
-				array('type'=>'edit','name'=>'THimageHeight','label'=>'Высота Миниатюры', 'width'=>'100px'),
-				array('type'=>'edit','name'=>'imageColor','label'=>'Цвета фона', 'width'=>'100px',
-					'comment' => '#RRGGBB'),
-				array('type'=>'divider'),
-				array('type'=>'text', 'value'=>
-				"Для создания шаблонов полнотекстового просмотра, элемента списка и элемента блока " .
-					"можно использовать макросы:<br />\n".
-					"<b>$(caption)</b> - заголовок<br />\n".
-					"<b>$(preview)</b> - краткий текст<br />\n".
-					"<b>$(text)</b> - полный текст<br />\n".
-					"<b>$(posted)</b> - дата публикации<br />\n".
-					"<b>$(link)</b> - адрес статьи (URL)<br />\n".
-					"<b>$(section)</b> - адрес списка статей (URL)<br />\n".
-					"<b>$(image)</b> - адрес картинки (URL)<br />\n".
-					"<b>$(thumbnail)</b> - адрес миниатюры (URL)<br />\n".
-					"<b>$(imageWidth)</b> - ширина картинки<br />\n".
-					"<b>$(imageHeight)</b> - высота картинки<br />\n".
-					"<b>$(thumbnailWidth)</b> - ширина миниатюры<br />\n".
-					"<b>$(thumbnailHeight)</b> - высота миниатюры<br />\n"
-				),
-			),
-			'buttons' => array('ok', 'apply', 'cancel'),
-		);
-		$result = $page->renderForm($form, $this->settings);
-		return $result;
-	}
-	//-----------------------------------------------------------------------------
+                array('type'=>'select','name'=>'listSortMode','label'=>'Сортировка',
+                    'values' => array('posted', 'position'),
+                    'items' => array('По дате добавления', 'Ручная')),
+                array('type'=>'checkbox','name'=>'listSortDesc','label'=>'В обратном порядке'),
+                array('type'=>'header', 'value' => 'Блок статей'),
+                array('type'=>'select','name'=>'blockMode','label'=>'Режим блока статей',
+                    'values' => array('none', 'last', 'manual'),
+                    'items' => array('Отключить','Последние статьи','Избранные статьи')),
+                array('type'=>'memo','name'=>'tmplBlock','label'=>'Шаблон элемента блока',
+                    'height'=>'3', 'value' => $this->templates()->clientRead('Block.html')),
+                array('type'=>'edit','name'=>'blockCount','label'=>'Количество', 'width'=>'50px'),
+                array('type'=>'header', 'value' => 'Краткое описание'),
+                array('type'=>'edit','name'=>'previewMaxSize','label'=>'Макс. размер описания',
+                    'width'=>'50px', 'maxlength'=>'4', 'comment'=>'символов'),
+                array('type'=>'checkbox','name'=>'previewSmartSplit','label'=>'"Умное" создание описания'),
+                array('type'=>'header', 'value' => 'Картинка'),
+                array('type'=>'edit','name'=>'imageWidth','label'=>'Ширина', 'width'=>'100px'),
+                array('type'=>'edit','name'=>'imageHeight','label'=>'Высота', 'width'=>'100px'),
+                array('type'=>'edit','name'=>'THimageWidth','label'=>'Ширина Миниатюры', 'width'=>'100px'),
+                array('type'=>'edit','name'=>'THimageHeight','label'=>'Высота Миниатюры', 'width'=>'100px'),
+                array('type'=>'edit','name'=>'imageColor','label'=>'Цвета фона', 'width'=>'100px',
+                    'comment' => '#RRGGBB'),
+                array('type'=>'divider'),
+                array('type'=>'text', 'value'=>
+                "Для создания шаблонов полнотекстового просмотра, элемента списка и элемента блока " .
+                    "можно использовать макросы:<br />\n".
+                    "<b>$(caption)</b> - заголовок<br />\n".
+                    "<b>$(preview)</b> - краткий текст<br />\n".
+                    "<b>$(text)</b> - полный текст<br />\n".
+                    "<b>$(posted)</b> - дата публикации<br />\n".
+                    "<b>$(clientUrl)</b> - адрес статьи (URL)<br />\n".
+                    "<b>$(imageUrl)</b> - адрес картинки (URL)<br />\n".
+                    "<b>$(thumbUrl)</b> - адрес миниатюры (URL)<br />\n".
+                    "<b>$(imageWidth)</b> - ширина картинки<br />\n".
+                    "<b>$(imageHeight)</b> - высота картинки<br />\n".
+                    "<b>$(thumbWidth)</b> - ширина миниатюры<br />\n".
+                    "<b>$(thumbHeight)</b> - высота миниатюры<br />\n"
+                ),
+            ),
+            'buttons' => array('ok', 'apply', 'cancel'),
+        );
+        $result = $page->renderForm($form, $this->settings);
+        return $result;
+    }
 
-	/**
-	 * Формирование контента
-	 *
-	 * @return string|mixed
-	 */
-	public function clientRenderContent()
-	{
-		$Eresus = Eresus_CMS::getLegacyKernel();
-		$page = Eresus_Kernel::app()->getPage();
+    /**
+     * Дополнительные действия при сохранении настроек
+     */
+    public function onSettingsUpdate()
+    {
+        parent::onSettingsUpdate();
+        $this->templates()->clientWrite('Article.html', arg('tmplArticle'));
+        $this->templates()->clientWrite('Block.html', arg('tmplBlock'));
+        $this->templates()->clientWrite('List.html', arg('tmplList'));
+    }
 
-		if ($page->topic)
-		{
-			$acceptUrl = $Eresus->request['path'] .
-				($page->subpage !== 0 ? 'p' . $page->subpage . '/' : '') .
-				($page->topic !== false ? $page->topic . '/' : '');
-			if ($acceptUrl != $Eresus->request['url'])
-			{
-				$page->httpError(404);
-			}
-		}
-		else
-		{
-			$acceptUrl = $Eresus->request['path'] .
-				($page->subpage !== 0 ? 'p' . $page->subpage . '/' : '');
-			if ($acceptUrl != $Eresus->request['url'])
-			{
-				$page->httpError(404);
-			}
-		}
+    /**
+     * Формирование контента
+     *
+     * @return string
+     */
+    public function clientRenderContent()
+    {
+        $controller = new Articles_Controller_Client_Content($this);
+        return $controller->actionContent();
+    }
 
-		return parent::clientRenderContent();
-	}
-	//-----------------------------------------------------------------------------
+    /**
+     * Вставляет блок статей на страницу
+     *
+     * @param Eresus_Event_Render $event
+     */
+    public function clientOnPageRender(Eresus_Event_Render $event)
+    {
+        $articles = $this->renderArticlesBlock();
+        $text = str_replace('$(ArticlesBlock)', $articles, $event->getText());
+        $event->setText($text);
+    }
 
-	/**
-	 * Отрисовка списка статей
-	 *
-	 * @param array $options  Свойства списка статей
-	 *              $options['pages'] bool Отображать переключатель страниц
-	 *              $options['oldordering'] bool Сортировать элементы
-	 * @return string
-	 */
-	public function clientRenderList($options = null)
-	{
-		$page = Eresus_Kernel::app()->getPage();
+    /**
+     * Удаляет статьи при удалении раздела сайта
+     *
+     * @param int $sectionId
+     *
+     * @since 3.01
+     */
+    public function onSectionDelete($sectionId)
+    {
+        /** @var Articles_Entity_Table_Article $table */
+        $table = ORM::getTable($this, 'Article');
+        /** @var Articles_Entity_Article[] $articles */
+        $articles = $table->findInSection($sectionId, null, 0, true);
+        foreach ($articles as $article)
+        {
+            $table->delete($article);
+        }
+    }
 
-		$item = array(
-			'items' => parent::clientRenderList($options),
-			'title' => $page->title,
-			'content' => $page->content,
-		);
-		$result = parent::replaceMacros($this->settings['tmplList'], $item);
+    /**
+     * Отрисовка блока статей
+     *
+     * @return string
+     */
+    private function renderArticlesBlock()
+    {
+        /** @var Articles_Entity_Table_Article $table */
+        $table = ORM::getTable($this, 'Article');
+        $q = $table->createSelectQuery();
+        if ('manual' == $this->settings['blockMode'])
+        {
+            $q->where($q->expr->eq('block', $q->bindValue(true, null, PDO::PARAM_BOOL)));
+        }
+        /** @var Articles_Entity_Article[] $articles */
+        $articles = $table->loadFromQuery($q, $this->settings['blockCount']);
 
-		return $result;
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
-	 * Отрисовка статьи в списке
-	 *
-	 * @param array $item  Свойства статьи
-	 * @return string
-	 */
-	public function clientRenderListItem($item)
-	{
-		$item['posted'] = $this->formatDate($item['posted'], $this->settings['dateFormatPreview']);
-		$result = $this->replaceMacros($this->settings['tmplListItem'], $item);
-		return $result;
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
-	 * Отрисовка статьи
-	 *
-	 * @return string|mixed
-	 */
-	public function clientRenderItem()
-	{
-		$Eresus = Eresus_CMS::getLegacyKernel();
-		$page = Eresus_Kernel::app()->getPage();
-
-		if ($page->topic != (string) ((int) ($page->topic)))
-		{
-			$page->httpError(404);
-		}
-
-		$item = $Eresus->db->selectItem($this->table['name'],
-			"(`id`='" . $page->topic . "') AND (`active`='1')");
-		if (is_null($item))
-		{
-			$item = $page->httpError(404);
-			$result = $item['content'];
-		}
-		else
-		{
-			$item['posted'] = $this->formatDate($item['posted'], $this->settings['dateFormatFullText']);
-			$result = $this->replaceMacros($this->settings['tmplItem'], $item);
-		}
-		$page->section[] = $item['caption'];
-		$item['access'] = $page->access;
-		$item['name'] = $item['id'];
-		$item['title'] = $item['caption'];
-		$item['hint'] = $item['description'] = $item['keywords'] = '';
-		$Eresus->plugins->clientOnURLSplit($item, arg('url'));
-		return $result;
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
-	 * Обработчик события clientOnPageRender
-	 *
-	 * @param string $text  HTML страницы
-	 * @return string
-	 */
-	public function clientOnPageRender($text)
-	{
-		$articles = $this->renderArticlesBlock();
-		$text = str_replace('$(ArticlesBlock)', $articles, $text);
-		return $text;
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
-	 * Обрабатывает запрос на переключение активности статьи
-	 *
-	 * @param int $id  ID статьи
-	 *
-	 * @return void
-	 *
-	 * @uses DB::getHandler
-	 * @uses DB::execute
-	 * @uses HTTP::redirect
-	 */
-	public function toggle($id)
-	{
-		$page = Eresus_Kernel::app()->getPage();
-
-		$q = DB::getHandler()->createUpdateQuery();
-		$e = $q->expr;
-		$q->update($this->table['name'])
-			->set('active', $e->not('active'))
-			->where($e->eq('id', $q->bindValue($id, null, PDO::PARAM_INT)));
-		DB::execute($q);
-
-		HTTP::redirect(str_replace('&amp;', '&', $page->url()));
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
-	 * Создание краткого текста
-	 *
-	 * @param string $text
-	 * @return string
-	 */
-	private function createPreview($text)
-	{
-		$text = trim(preg_replace('/<.+>/Us',' ',$text));
-		$text = str_replace(array("\n", "\r"), ' ', $text);
-		$text = preg_replace('/\s{2,}/U', ' ', $text);
-
-		if (!$this->settings['previewMaxSize'])
-		{
-			$this->settings['previewMaxSize'] = 500;
-		}
-
-		if ($this->settings['previewSmartSplit'])
-		{
-			preg_match("/\A(.{1,".$this->settings['previewMaxSize']."})(\.\s|\.|\Z)/Us", $text, $result);
-			$result = $result[1].'...';
-		}
-		else
-		{
-			$result = mb_substr($text, 0, $this->settings['previewMaxSize']);
-			if (mb_strlen($text) > $this->settings['previewMaxSize'])
-			{
-				$result .= '...';
-			}
-		}
-		return $result;
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
-	 * Изменение текста на странице
-	 */
-	private function text()
-	{
-		$Eresus = Eresus_CMS::getLegacyKernel();
-		$page = Eresus_Kernel::app()->getPage();
-
-		$item = $Eresus->db->selectItem('pages', '`id`="' . arg('section', 'int') . '"');
-		$item['content'] = $Eresus->db->escape($Eresus->request['arg']['content']);
-		$item = array('id' => $item['id'], 'content' => $item['content']);
-		$Eresus->db->updateItem('pages', $item, '`id`="' . arg('section', 'int') . '"');
-
-		HTTP::redirect(str_replace('&amp;', '&', $page->url(array('action' => 'text'))));
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
-	 * Диалог редактирования текста на странице
-	 *
-	 * @return string
-	 */
-	private function adminRenderText()
-	{
-		$Eresus = Eresus_CMS::getLegacyKernel();
-		$page = Eresus_Kernel::app()->getPage();
-
-		$item = $Eresus->db->selectItem('pages', '`id`="' . arg('section', 'int') . '"');
-		$form = array(
-			'name' => 'contentEditor',
-			'caption' => 'Текст на странице',
-			'width' => '95%',
-			'fields' => array(
-				array('type' => 'hidden', 'name' => 'action', 'value' => 'textupdate'),
-				array('type' => 'html', 'name' => 'content', 'height' => '400px',
-					'value' => $item['content']),
-			),
-			'buttons'=> array('ok' => 'Сохранить'),
-		);
-
-		$result = $page->renderForm($form);
-		return $page->renderTabs($this->table['tabs']) . $result;
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
-	 * Отрисовка блока статей
-	 *
-	 * @return string
-	 */
-	private function renderArticlesBlock()
-	{
-		$Eresus = Eresus_CMS::getLegacyKernel();
-
-		$result = '';
-		$items = $Eresus->db->select($this->table['name'],
-			"`active`='1'" . (
-			$this->settings['blockMode'] == self::BLOCK_MANUAL ? " AND `block`='1'" : ''
-			),
-			($this->table['sortDesc'] ? '-' : '') . $this->table['sortMode'], '',
-			$this->settings['blockCount']);
-
-		if (count($items))
-		{
-			foreach ($items as $item)
-			{
-				$item['posted'] = $this->formatDate($item['posted'], $this->settings['dateFormatPreview']);
-				$result .= $this->replaceMacros($this->settings['tmplBlockItem'], $item);
-			}
-		}
-		return $result;
-	}
-	//-----------------------------------------------------------------------------
-
-	/**
-	 * Форматирование даты
-	 *
-	 * @param string $date    Дата в формате YYYY-MM-DD hh:mm:ss
-	 * @param string $format  Правила форматирования даты
-	 *
-	 * @return string  отформатированная дата
-	 */
-	private function formatDate($date, $format = DATETIME_NORMAL)
-	{
-		if (empty($date))
-		{
-			$result = DATETIME_UNKNOWN;
-		}
-		else
-		{
-			preg_match_all('/(?<!\\\)[hHisdDmMyY]/', $format, $m, PREG_OFFSET_CAPTURE);
-			$replace = array(
-				'Y' => substr($date, 0, 4),
-				'm' => substr($date, 5, 2),
-				'd' => substr($date, 8, 2),
-				'h' => substr($date, 11, 2),
-				'i' => substr($date, 14, 2),
-				's' => substr($date, 17, 2)
-			);
-			$replace['y'] = substr($replace['Y'], 2, 2);
-			$replace['M'] = constant('MONTH_'.$replace['m']);
-			$replace['D'] = $replace['d']{0} == '0' ? $replace['d']{1} : $replace['d'];
-			$replace['H'] = $replace['h']{0} == '0' ? $replace['h']{1} : $replace['h'];
-
-			$delta = 0;
-			for ($i = 0; $i<count($m[0]); $i++)
-			{
-				$format = substr_replace($format, $replace[$m[0][$i][0]], $m[0][$i][1]+$delta, 1);
-				$delta += strlen($replace[$m[0][$i][0]]) - 1;
-			}
-			$result = $format;
-		}
-		return $result;
-	}
+        $vars = array(
+            'settings' => $this->settings,
+            'articles' => $articles,
+        );
+        $tmpl = $this->templates()->client('Block.html');
+        $html = $tmpl->compile($vars);
+        return $html;
+    }
 }
+

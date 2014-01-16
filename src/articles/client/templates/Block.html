@@ -1,0 +1,12 @@
+{foreach $articles article}
+<ul class="articles">
+    <li class="articles__article">
+        <article class="article article_is_preview">
+            <time class="article__posted" datetime="{$article->posted->format('Y-m-d')}">{$article->posted->format('d.m.y')}</time>
+            <a href="{$article->clientUrl}" class="article__link article__title">{$article->caption}</a>
+        </article>
+    </li>
+</ul>
+{/foreach}
+
+

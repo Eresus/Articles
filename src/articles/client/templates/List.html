@@ -1,0 +1,27 @@
+<h1>{$page->title}</h1>
+
+<div>
+    {$page->content}
+</div>
+
+{foreach $articles article}
+<article class="article article_is_preview">
+    <header class="article__header">
+        <h1 class="article__title">{$article->caption}</h1>
+        <time class="article__posted" datetime="{$article->posted->format('Y-m-d')}">{$article->posted->format('d.m.y')}</time>
+    </header>
+    <p>
+        {if $article->thumbUrl}
+        <img src="{$article->thumbUrl}" alt="{$article->caption|escape}" class="article__image"
+             width="{$settings.thumbWidth}" height="{$settings.thumbHeight}">
+        {/if}
+        {$article->preview}
+    </p>
+    <footer class="article__footer">
+        <a href="{$article->clientUrl}" class="link article__link">Полный текст…</a>
+    </footer>
+</article>
+{/foreach}
+{if $pager}
+{$pager->render()}
+{/if}
